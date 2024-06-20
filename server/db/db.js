@@ -58,7 +58,70 @@ function Database(dbname) {
 			this.db,
 			'SELECT ticket_id, state, category, owner, title, initial_text, submitted_at FROM tickets ORDER BY submitted_at DESC'
 		);
+		// .map(c => ({...c, incompat: []})); // Add incompat list
+		// const incompats = await dbAllAsync(this.db, 'select * from incompats');
+
+		// for (const { course, incompat } of incompats) {
+		// 	// Append incompatibility to the correct course
+		// 	const main = tickets.find((c) => c.code === course);
+		// 	if (!main) throw 'DB inconsistent';
+
+		// 	main.incompat.push(incompat);
+		// }
+
 		return tickets;
+	};
+
+	/**
+	 * Authenticate a user from their email and password
+	 *
+	 * @param email email of the user to authenticate
+	 * @param password password of the user to authenticate
+	 *
+	 * @returns a Promise that resolves to the user object {id, username, name, fullTime}
+	 */
+	this.authUser = (email, password) =>
+		new Promise((resolve, reject) => {
+			// Get the student with the given email
+			dbGetAsync(this.db, 'SELECT * FROM users WHERE email = ?', [email])
+				.then((user) => {
+					// If there is no such user, resolve to false.
+					// This is used instead of rejecting the Promise to differentiate the
+					// failure from database errors
+					if (!user) resolve(false);
+
+					// Verify the password
+					crypto.scrypt(password, user.salt, 32, (err, hash) => {
+						if (err) reject(err);
+
+						if (crypto.timingSafeEqual(hash, Buffer.from(user.hash, 'hex')))
+							resolve({
+								id: user.id,
+								username: user.email,
+								name: user.name,
+							});
+						// Avoid full_time = null being cast to false
+						else resolve(false);
+					});
+				})
+				.catch((e) => reject(e));
+		});
+
+	/**
+	 * Retrieve the student with the specified id
+	 *
+	 * @param id the id of the student to retrieve
+	 *
+	 * @returns a Promise that resolves to the user object {id, username, name, fullTime}
+	 */
+	this.getUser = async (id) => {
+		const user = await dbGetAsync(
+			this.db,
+			'select email as username, name, full_time as fullTime from users where id = ?',
+			[id]
+		);
+
+		return { ...user, id };
 	};
 }
 
