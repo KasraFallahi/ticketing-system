@@ -10,11 +10,11 @@ import {
 } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 
-/** Context used to propagate the list of courses */
-const coursesContext = createContext();
+/** Context used to propagate the list of tickets */
+const ticketsContext = createContext();
 
 /** Context used to propagate the user object */
-const studentContext = createContext();
+const userContext = createContext();
 
 /** Context used to propagate all the study plan related functions */
 const spActivitiesContext = createContext();
@@ -300,8 +300,8 @@ export {
 	MyNavbar,
 	NotFoundPage,
 	ErrorsAlert,
-	coursesContext,
-	studentContext,
+	ticketsContext,
+	userContext,
 	spActivitiesContext,
 	waitingContext,
 	SmallRoundButton,

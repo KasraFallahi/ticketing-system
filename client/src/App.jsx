@@ -12,8 +12,8 @@ import {
 import {
 	ErrorsAlert,
 	MyNavbar,
-	coursesContext,
-	studentContext,
+	ticketsContext,
+	userContext,
 	spActivitiesContext,
 	checkStudyPlanModified,
 	waitingContext,
@@ -25,6 +25,7 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import { API } from './API';
 import { Ticket } from './Ticket';
+import { TicketList } from './TicketList';
 
 function App() {
 	return (
@@ -48,6 +49,9 @@ function Main() {
 	/** A list of errors */
 	const [errors, setErrors] = useState([]);
 
+	/** Network-related waiting, like after pressing save or delete study plan. When waiting all controls are disabled. */
+	const [waiting, setWaiting] = useState(false);
+
 	/**
 	 * Information about the currently logged in student.
 	 * This is undefined when no student is logged in
@@ -59,12 +63,11 @@ function Main() {
 
 	useEffect(() => {
 		// Load the list of courses and number of students enrolled from the server
-		Promise.all(API.fetchCourses())
+		API.fetchTickets()
 			.then((res) => {
-				const c = res[0]; // Tickets
-
+				console.log(res);
 				setTickets(
-					c.map(
+					res.map(
 						(ticket) =>
 							new Ticket(
 								ticket.ticket_id,
@@ -77,11 +80,14 @@ function Main() {
 					)
 					// .sort((a, b) => a.name.localeCompare(b.name))
 				);
-
-				// Loading done
 				setLoading(false);
 			})
-			.catch((err) => setErrors(err));
+			.catch((err) => {
+				setErrors(err);
+				console.log(err);
+			});
+
+		// Loading done
 	}, []);
 
 	return (
@@ -97,22 +103,22 @@ function Main() {
 					/>
 				}
 			>
-				{/* <Route
+				<Route
 					path=""
 					element={
 						loading ? (
 							<LoadingSpinner />
 						) : (
 							<HomePage
-								student={student}
-								courses={courses}
-								spActivities={spActivities}
+								user={user}
+								tickets={tickets}
+								// spActivities={spActivities}
 								errorAlertActive={errors.length > 0}
 								waiting={waiting}
 							/>
 						)
 					}
-				/> */}
+				/>
 				{/* <Route
 					path="login"
 					element={
@@ -130,6 +136,51 @@ function Main() {
 
 			<Route path="*" element={<NotFoundPage />} />
 		</Routes>
+	);
+}
+
+/**
+ * Proper home page component of the app
+ *
+ * @param props.courses list of all the Course objects
+ * @param props.student object with all the currently logged in student's info
+ * @param props.spActivities object with all the study plan related functions
+ * @param props.errorAlertActive true when the error alert on the top is active and showing, false otherwise
+ * @param props.waiting boolean, when true all controls should be disabled
+ */
+function HomePage(props) {
+	return (
+		<ticketsContext.Provider value={props.tickets}>
+			<userContext.Provider value={props.user}>
+				<waitingContext.Provider value={props.waiting}>
+					<Container
+						fluid
+						style={{
+							paddingLeft: '2rem',
+							paddingRight: '2rem',
+							paddingBottom: '1rem',
+							marginTop: props.errorAlertActive ? '2rem' : '6rem',
+						}}
+					>
+						<Row className="justify-content-center">
+							<Col
+								lg
+								style={{
+									borderRight: props.user && '1px solid #dfdfdf',
+									maxWidth: '70%',
+								}}
+							>
+								<TicketList />
+							</Col>
+							{
+								// If a user is logged in, show their study plan
+								props.user ? <Col lg>{/* <StudyPlan /> */}</Col> : false
+							}
+						</Row>
+					</Container>
+				</waitingContext.Provider>
+			</userContext.Provider>
+		</ticketsContext.Provider>
 	);
 }
 

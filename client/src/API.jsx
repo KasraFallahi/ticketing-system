@@ -50,10 +50,10 @@ const APICall = async (
  *
  * @returns list of courses
  */
-const fetchCourses = async () => await APICall('tickets');
+const fetchTickets = async () => await APICall('tickets');
 
 const API = {
-	fetchCourses,
+	fetchTickets,
 };
 
 export { API };
