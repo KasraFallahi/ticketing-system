@@ -96,7 +96,7 @@ function Database(dbname) {
 
 						if (crypto.timingSafeEqual(hash, Buffer.from(user.hash, 'hex')))
 							resolve({
-								id: user.id,
+								id: user.user_id,
 								username: user.email,
 								name: user.name,
 							});
@@ -117,7 +117,7 @@ function Database(dbname) {
 	this.getUser = async (id) => {
 		const user = await dbGetAsync(
 			this.db,
-			'select email as username, name, full_time as fullTime from users where id = ?',
+			'SELECT email as username, name FROM users WHERE user_id = ?',
 			[id]
 		);
 

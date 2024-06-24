@@ -1,4 +1,4 @@
-const SERVER_HOST = 'http://127.0.0.1';
+const SERVER_HOST = 'http://localhost';
 const SERVER_PORT = 3001;
 
 const SERVER_BASE = `${SERVER_HOST}:${SERVER_PORT}/api/`;
@@ -52,8 +52,44 @@ const APICall = async (
  */
 const fetchTickets = async () => await APICall('tickets');
 
+/**
+ * Attempts to login the student
+ *
+ * @param email email of the student
+ * @param password password of the student
+ */
+const login = async (email, password) =>
+	await APICall(
+		'session',
+		'POST',
+		JSON.stringify({ username: email, password }),
+		{ 'Content-Type': 'application/json' }
+	);
+
+/**
+ * Logout.
+ * This function can return a "Not authenticated" error if the student wasn't authenticated beforehand
+ */
+const logout = async () =>
+	await APICall('session', 'DELETE', undefined, undefined, false);
+
+/**
+ * Fetches the currently logged in user's info
+ */
+const fetchCurrentUser = async () => await APICall('session/current');
+
+/**
+ * Fetches the token to access the second server
+ */
+const getAuthToken = async () =>
+	await APICall('auth-token', 'GET', undefined, undefined, true);
+
 const API = {
 	fetchTickets,
+	fetchCurrentUser,
+	logout,
+	login,
+	getAuthToken,
 };
 
 export { API };

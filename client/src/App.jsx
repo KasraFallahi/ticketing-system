@@ -22,10 +22,11 @@ import {
 import { Col, Container, Row, Spinner } from 'react-bootstrap';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
-import './App.css';
+// import './App.css';
 import { API } from './API';
 import { Ticket } from './Ticket';
 import { TicketList } from './TicketList';
+import { LoginForm } from './LoginForm';
 
 function App() {
 	return (
@@ -58,6 +59,8 @@ function Main() {
 	 */
 	const [user, setUser] = useState(undefined);
 
+	const [authToken, setAuthToken] = useState(undefined);
+
 	/** The list of tickets */
 	const [tickets, setTickets] = useState([]);
 
@@ -80,6 +83,7 @@ function Main() {
 					)
 					// .sort((a, b) => a.name.localeCompare(b.name))
 				);
+				// Loading done
 				setLoading(false);
 			})
 			.catch((err) => {
@@ -87,8 +91,97 @@ function Main() {
 				console.log(err);
 			});
 
-		// Loading done
+		// Check if the user was already logged in
+		API.fetchCurrentUser()
+			.then((user) => {
+				setUser(user);
+				API.getAuthToken().then((res) => setAuthToken(res.token));
+			})
+			.catch((err) => {
+				// Remove eventual 401 Unauthorized errors from the list, those are expected
+				setErrors(err.filter((e) => e !== 'Not authenticated'));
+			});
 	}, []);
+
+	useEffect(() => {
+		if (user) {
+			// authentication has already taken place
+			API.getAuthToken()
+				.then((res) => {
+					setAuthToken(res.token);
+					setUser((user) => ({ ...user }));
+				})
+				.catch(() => {}); // This should not happen: token has just been requested
+		}
+		// Every time the study plan (as stored on the server) changes, ask the average success rate to server2
+		// Using an array reference here in this very particular case would be safe since the array is recreated
+		// because it is part of a state set after loading from server
+		// So, [savedStudyPlan?.courses] could be used as a dependency.
+
+		// To avoid problems, however, a value (string) derived from the array is used here.
+		// Note that .length would not work because the length of the old and the new one can be the same but with different content
+
+		// Alternatively, not recommended because you may risk forgetting to update it:
+		// use an additional state variable (flag), to be set every time courses changes
+	}, []);
+
+	/**
+	 * Refetches dynamic content (number of students per course and study plan info)
+	 *
+	 * @returns a Promise that resolves when the refetch is complete
+	 */
+	const refetchDynamicContent = () => {
+		// Fetch student's info
+		const p2 = API.fetchCurrentUser()
+			.then((user) => {
+				console.log('SETTING USER...');
+				setUser(user);
+			})
+			.catch((err) => {
+				// Remove eventual 401 Unauthorized errors from the list, those are expected
+				console.log('ERRORS SETTING USER\n', err);
+				setErrors(err.filter((e) => e !== 'Not authenticated'));
+			});
+
+		return p2;
+	};
+
+	/**
+	 * Perform the login
+	 *
+	 * @param email email of the student
+	 * @param password password of the student
+	 * @param onFinish optional callback to be called on login success or fail
+	 */
+	const login = (email, password, onFinish) => {
+		API.login(email, password)
+			.then(() => {
+				setErrors([]);
+				console.log('BEFORE REFETCH');
+				refetchDynamicContent().then(() => {
+					console.log('AFTER REFETCH');
+					navigate('/');
+				});
+			})
+			.catch((err) => setErrors(err))
+			.finally(() => onFinish?.());
+	};
+
+	/**
+	 * Perform the logout
+	 */
+	const logout = () => {
+		API.logout()
+			.then(() => {
+				setUser(undefined);
+				// setSavedStudyPlan(undefined);
+				setAuthToken(undefined);
+			})
+			.catch((err) => {
+				// Remove eventual 401 Unauthorized errors from the list
+				setErrors(err.filter((e) => e !== 'Not authenticated'));
+			});
+	};
 
 	return (
 		<Routes>
@@ -97,7 +190,7 @@ function Main() {
 				element={
 					<Header
 						user={user}
-						// logoutCbk={logout}
+						logoutCbk={logout}
 						errors={errors}
 						clearErrors={() => setErrors([])}
 					/>
@@ -119,7 +212,7 @@ function Main() {
 						)
 					}
 				/>
-				{/* <Route
+				<Route
 					path="login"
 					element={
 						loading ? (
@@ -131,7 +224,7 @@ function Main() {
 							/>
 						)
 					}
-				/> */}
+				/>
 			</Route>
 
 			<Route path="*" element={<NotFoundPage />} />
@@ -195,10 +288,7 @@ function HomePage(props) {
 function Header(props) {
 	return (
 		<>
-			<MyNavbar
-				user={props.user}
-				// logoutCbk={props.logoutCbk}
-			/>
+			<MyNavbar user={props.user} logoutCbk={props.logoutCbk} />
 			{props.errors.length > 0 ? (
 				<ErrorsAlert errors={props.errors} clear={props.clearErrors} />
 			) : (

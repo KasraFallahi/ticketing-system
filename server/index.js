@@ -2,8 +2,11 @@
 
 const express = require('express');
 const Database = require('./db/db');
+const morgan = require('morgan'); // logging middleware
 const cors = require('cors');
+const { body, validationResult } = require('express-validator');
 const { initAuthentication, isLoggedIn } = require('./auth');
+const passport = require('passport');
 
 const jsonwebtoken = require('jsonwebtoken');
 const jwtSecret =
@@ -15,6 +18,8 @@ const app = new express();
 const port = 3001;
 const db = new Database('./db/ticket.db');
 
+// set up middlewares
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(
 	cors({
@@ -41,6 +46,42 @@ app.get('/api/tickets', async (req, res) => {
 	}
 });
 
+/*
+ * Authenticate and login
+ */
+app.post(
+	'/api/session',
+	body('username', 'username is not a valid email').isEmail(),
+	body('password', 'password must be a non-empty string').isString().notEmpty(),
+	(req, res, next) => {
+		// Check if validation is ok
+		const err = validationResult(req);
+		const errList = [];
+		if (!err.isEmpty()) {
+			errList.push(...err.errors.map((e) => e.msg));
+			return res.status(400).json({ errors: errList });
+		}
+
+		// Perform the actual authentication
+		passport.authenticate('local', (err, user) => {
+			if (err) {
+				res.status(err.status).json({ errors: [err.msg] });
+			} else {
+				req.login(user, (err) => {
+					if (err) return next(err);
+					else {
+						res.json({
+							email: user.username,
+							name: user.name,
+						});
+					}
+					// }
+				});
+			}
+		})(req, res, next);
+	}
+);
+
 /**
  * Logout
  */
@@ -51,36 +92,19 @@ app.delete('/api/session', isLoggedIn, (req, res) => {
 /**
  * Check if the user is logged in and return their info
  */
-// app.get('/api/session/current', isLoggedIn, async (req, res) => {
-// 	// let studyPlan = undefined;
-// 	let err = false;
-
-// 	if (req.user.fullTime !== null) {
-// 		await db
-// 			.getStudyPlan(req.user.id)
-// 			.then((sp) => (studyPlan = sp))
-// 			.catch(() => {
-// 				res.status(500).json({ errors: ['Database error'] });
-// 				err = true;
-// 			});
-// 	}
-
-// 	if (!err)
-// 		res.json({
-// 			email: req.user.username,
-// 			name: req.user.name,
-// 			studyPlan,
-// 		});
-// });
+app.get('/api/session/current', isLoggedIn, async (req, res) => {
+	res.json({
+		email: req.user.username,
+		name: req.user.name,
+	});
+});
 
 /*** Token ***/
 /**
  * Get token
  */
 app.get('/api/auth-token', isLoggedIn, (req, res) => {
-	const fullTime = req.user.fullTime;
-
-	const payloadToSign = { fullTime: fullTime, userId: req.user.id };
+	const payloadToSign = { userId: req.user.id };
 	const jwtToken = jsonwebtoken.sign(payloadToSign, jwtSecret, {
 		expiresIn: expireTime,
 	});
