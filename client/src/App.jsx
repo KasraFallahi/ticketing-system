@@ -65,10 +65,9 @@ function Main() {
 	const [tickets, setTickets] = useState([]);
 
 	useEffect(() => {
-		// Load the list of courses and number of students enrolled from the server
+		// Load the list of tickets
 		API.fetchTickets()
 			.then((res) => {
-				console.log(res);
 				setTickets(
 					res.map(
 						(ticket) =>
@@ -78,7 +77,8 @@ function Main() {
 								ticket.category,
 								ticket.title,
 								ticket.initial_text,
-								ticket.submitted_at
+								ticket.submitted_at,
+								ticket.owner
 							)
 					)
 					// .sort((a, b) => a.name.localeCompare(b.name))

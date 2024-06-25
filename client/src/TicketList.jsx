@@ -1,12 +1,15 @@
 import { useContext, useState } from 'react';
 import {
 	Accordion,
+	Table,
 	Badge,
 	Col,
 	Container,
 	OverlayTrigger,
 	Row,
 	Tooltip,
+	Card,
+	Button,
 } from 'react-bootstrap';
 import {
 	checkCourseConstraints,
@@ -22,32 +25,151 @@ import {
  * Receives the list of all courses from a Context
  */
 function TicketList() {
-	// An item is accented when the corresponding code is hovered in a course's details card
-	const [accentList, setAccentList] = useState([]);
 	const tickets = useContext(ticketsContext);
 
-	// Toggle the accent on the specified course
-	const toggleAccent = (code) => {
-		setAccentList((cur) => {
-			if (cur.includes(code)) return cur.filter((c) => c !== code);
-			else return [...cur, code];
-		});
-	};
-
 	return (
-		<Accordion alwaysOpen>
-			{tickets.map((c, i, a) => (
-				<TicketItem
-					course={c}
-					toggleAccent={toggleAccent}
-					accent={accentList.includes(c.code)}
-					key={c.ticket_id}
-					first={i === 0}
-					last={i === a.length - 1}
-				/>
-			))}
-		</Accordion>
+		<>
+			<Container
+				style={{
+					paddingTop: '1rem',
+					paddingBottom: '0.5rem',
+					paddingRight: '1.5rem',
+					paddingLeft: '0.5rem',
+				}}
+			>
+				<Row>
+					<Col md={1} className="text-center">
+						ID
+					</Col>
+					<Col className="text-center" md={4}>
+						Title
+					</Col>
+					<Col md={1} className="text-center">
+						State
+					</Col>
+					<Col md={1} className="text-center">
+						Owner(s)
+					</Col>
+					<Col md={1} className="text-center">
+						Category
+					</Col>
+					<Col md={3} className="text-center">
+						Date Created
+					</Col>
+				</Row>
+			</Container>
+			<Accordion alwaysOpen>
+				{tickets.map((ticket) => (
+					<Row key={ticket.ticket_id}>
+						<Col>
+							<Accordion.Item eventKey={ticket.ticket_id}>
+								<Accordion.Header>
+									<Container>
+										<Row>
+											<Col md={1}>
+												<Badge bg="secondary">
+													<tt>#{ticket.ticket_id}</tt>
+												</Badge>
+											</Col>
+											<Col className="text-center" md={4}>
+												{<em style={{ color: 'grey' }}>{ticket.title}</em>}{' '}
+											</Col>
+											<Col md={1} className="text-center">
+												<Badge
+													bg={ticket.state === 'Closed' ? 'success' : 'warning'}
+												>
+													{ticket.state}
+												</Badge>
+											</Col>
+											<Col md={1} className="text-center">
+												{ticket.owner}
+											</Col>
+											<Col md={1} className="text-center">
+												{ticket.category}
+											</Col>
+											<Col md={3} className="text-center">
+												{ticket.submitted_at}
+											</Col>
+										</Row>
+									</Container>
+								</Accordion.Header>
+								<Accordion.Body>
+									{/* <CourseItemDetails
+									course={props.course}
+									toggleAccent={props.toggleAccent}
+									disabled={!constrOk}
+									reason={constraints?.reason}
+								/> */}
+								</Accordion.Body>
+							</Accordion.Item>
+						</Col>
+					</Row>
+				))}
+			</Accordion>
+		</>
 	);
+	// ------------------- 1st version -------------------
+	// return (
+	// 	<Container>
+	// 		<Row className="my-4">
+	// 			<Table striped hover>
+	// 				<thead>
+	// 					<tr>
+	// 						{headers.map((header, index) => (
+	// 							<th key={index}>{header}</th>
+	// 						))}
+	// 					</tr>
+	// 				</thead>
+	// 				<tbody>
+	// 					{tickets.map((ticket) => (
+	// 						<tr key={ticket.ticket_id}>
+	// 							<td>{ticket.ticket_id}</td>
+	// 							<td>{ticket.submitted_at}</td>
+	// 							<td>{ticket.title}</td>
+	// 							<td>{ticket.owner}</td>
+	// 							<td>{ticket.category}</td>
+	// 							<td>
+	// 								<Badge bg={ticket.state === 'Closed' ? 'success' : 'warning'}>
+	// 									{ticket.state}
+	// 								</Badge>
+	// 							</td>
+	// 							{/* <td>{ticket.estTime}</td> */}
+	// 							<td>1 day</td>
+	// 						</tr>
+	// 					))}
+	// 				</tbody>
+	// 			</Table>
+	// 		</Row>
+	// 	</Container>
+	// );
+
+	// return (
+	// 	<Table striped hover>
+	// 		<thead>
+	// 			<tr>
+	// 				{headers.map((header) => (
+	// 					<th key={header}>{header}</th>
+	// 				))}
+	// 			</tr>
+	// 		</thead>
+	// 		<tbody>
+	// 			<Accordion alwaysOpen>
+	// 				<tr>
+	// 					{tickets.map((c, i, a) => (
+	// 						<TicketItem
+	// 							ticket={c}
+	// 							toggleAccent={toggleAccent}
+	// 							accent={accentList.includes(c.code)}
+	// 							key={c.ticket_id}
+	// 							first={i === 0}
+	// 							last={i === a.length - 1}
+	// 						/>
+	// 					))}
+	// 				</tr>
+	// 			</Accordion>
+	// 		</tbody>
+	// 	</Table>
+	// );
 }
 
 /**
@@ -60,7 +182,7 @@ function TicketList() {
  * @param props.last boolean, marks this item as last in the collection. Render the bottom border
  */
 function TicketItem(props) {
-	const courses = useContext(ticketsContext);
+	const tickets = useContext(ticketsContext);
 	const student = useContext(userContext);
 
 	const itemStyle = {
@@ -85,7 +207,7 @@ function TicketItem(props) {
 		checkCourseConstraints(
 			props.course,
 			student.studyPlan,
-			courses,
+			tickets,
 			student.fullTime
 		);
 	const constrOk = constraints !== undefined ? constraints.result : true;
@@ -94,7 +216,7 @@ function TicketItem(props) {
 		<Row>
 			<Col>
 				<Accordion.Item
-					eventKey={props.course.code}
+					eventKey={props.ticket.ticket_id}
 					className={
 						(props.accent ? 'accent' : '') + (!constrOk ? ' disabled' : '')
 					}
@@ -105,17 +227,18 @@ function TicketItem(props) {
 							<Row>
 								<Col md="auto" className="align-self-center">
 									<Badge bg="secondary">
-										<tt>{props.course.code}</tt>
+										<tt>{props.ticket.ticket_id}</tt>
 									</Badge>
 								</Col>
 								<Col md="auto" style={{ borderLeft: '1px solid grey' }}>
 									{constrOk ? (
-										props.course.name
+										props.ticket.title
 									) : (
-										<em style={{ color: 'grey' }}>{props.course.name}</em>
+										<em style={{ color: 'grey' }}>{props.ticket.title}</em>
 									)}{' '}
 									<Badge bg="light" pill style={{ color: 'black' }}>
-										CFU: {props.course.cfu}
+										{/* CFU: {props.course.cfu} */}
+										CFU: CFU
 									</Badge>
 								</Col>
 								<Col
@@ -123,10 +246,11 @@ function TicketItem(props) {
 									style={{ marginRight: '1rem' }}
 								>
 									<Badge>
-										{props.course.numStudents +
+										badge
+										{/* {props.course.numStudents +
 											(props.course.maxStudents
 												? '/' + props.course.maxStudents
-												: '')}{' '}
+												: '')}{' '} */}
 										<i className="bi bi-person-fill" />
 									</Badge>
 								</Col>

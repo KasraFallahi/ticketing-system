@@ -56,7 +56,22 @@ function Database(dbname) {
 		// Note: perform the conversion from the db "max_students" to js' "maxStudents" in the SQL query
 		const tickets = await dbAllAsync(
 			this.db,
-			'SELECT ticket_id, state, category, owner, title, initial_text, submitted_at FROM tickets ORDER BY submitted_at DESC'
+			`
+			SELECT 
+			 	tickets.ticket_id,
+			 	tickets.state,
+			 	tickets.category,
+			 	tickets.title,
+			 	tickets.initial_text,
+			 	tickets.submitted_at,
+			 	users.name AS owner
+			FROM 
+			 	tickets
+			JOIN 
+				users ON tickets.owner = users.user_id
+			ORDER BY 
+				tickets.submitted_at DESC;
+			`
 		);
 		// .map(c => ({...c, incompat: []})); // Add incompat list
 		// const incompats = await dbAllAsync(this.db, 'select * from incompats');

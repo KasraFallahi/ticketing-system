@@ -9,13 +9,22 @@
  * @param initial_text the initial text of the ticket
  * @param submitted_at the timestamp when the ticket was submitted
  */
-function Ticket(ticket_id, state, category, title, initial_text, submitted_at) {
+function Ticket(
+	ticket_id,
+	state,
+	category,
+	title,
+	initial_text,
+	submitted_at,
+	owner
+) {
 	this.ticket_id = ticket_id;
 	this.state = state;
 	this.category = category;
 	this.title = title;
 	this.initial_text = initial_text;
 	this.submitted_at = submitted_at;
+	this.owner = owner;
 }
 
 export { Ticket };
