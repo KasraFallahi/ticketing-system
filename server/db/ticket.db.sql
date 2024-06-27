@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 CREATE TABLE IF NOT EXISTS "tickets" (
   "ticket_id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "owner" INTEGER NOT NULL,
-  "state" VARCHAR(255) NOT NULL,
+  "state" VARCHAR(255) NOT NULL DEFAULT 'Open',
   "category" VARCHAR(255) NOT NULL,
   "title" VARCHAR(255) NOT NULL,
   "initial_text" TEXT NOT NULL,
@@ -35,11 +35,11 @@ VALUES
   ('user2@example.com', 'Jane Smith', 'hashed_password2', 'random_salt2'),
   ('user3@example.com', 'Alice Johnson', 'hashed_password3', 'random_salt3');
 
-INSERT INTO tickets ("owner", "state", "category", "owner", "title", "initial_text")
+INSERT INTO tickets ("owner", "category", "owner", "title", "initial_text")
 VALUES
-  (1, 'Open', 'Technical Issue', 'user1@example.com', 'My computer is slow!', 'My computer has been running very slow lately. I can barely open any programs.'),
-  (1, 'Open', 'Question', 'user2@example.com', 'How do I request a vacation day?', 'I am unsure of the process for requesting a vacation day. Can you please provide instructions?'),
-  (1, 'Closed', 'Feature Request', 'user3@example.com', 'Add a dark mode option', 'I would love to see a dark mode option added to the application.');
+  (1, 'Technical Issue', 'user1@example.com', 'My computer is slow!', 'My computer has been running very slow lately. I can barely open any programs.'),
+  (2, 'Question', 'user2@example.com', 'How do I request a vacation day?', 'I am unsure of the process for requesting a vacation day. Can you please provide instructions?'),
+  (1, 'Feature Request', 'user3@example.com', 'Add a dark mode option', 'I would love to see a dark mode option added to the application.');
 
 INSERT INTO text_blocks ("ticket_id", "text", "author")
 VALUES

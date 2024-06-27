@@ -47,7 +47,7 @@ function MyNavbar(props) {
 							navigate('/');
 						}}
 					>
-						<i className="bi bi-card-list" /> Tickets
+						<i className="bi bi-card-list" /> Ticketing System
 					</Navbar.Brand>
 					<Nav>
 						{props.user ? (

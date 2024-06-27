@@ -19,16 +19,39 @@ import {
 	userContext,
 	waitingContext,
 } from './Miscellaneous';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * List of all the courses.
  * Receives the list of all courses from a Context
  */
 function TicketList() {
+	const user = useContext(userContext);
 	const tickets = useContext(ticketsContext);
+	const navigate = useNavigate();
 
 	return (
 		<>
+			{/* Title and Create New Button */}
+			<Row className="mb-3">
+				<Col>
+					<h5>All Tickets</h5>
+				</Col>
+				{user && (
+					<Col className="text-end">
+						<Button
+							variant="primary"
+							onClick={(event) => {
+								event.preventDefault();
+								navigate('/create-ticket');
+							}}
+						>
+							<i className="bi bi-plus-lg me-1"></i>
+							Create New
+						</Button>
+					</Col>
+				)}
+			</Row>
 			<Container
 				style={{
 					paddingTop: '1rem',
@@ -37,6 +60,7 @@ function TicketList() {
 					paddingLeft: '0.5rem',
 				}}
 			>
+				{/* Table Header */}
 				<Row>
 					<Col md={1} className="text-center">
 						ID

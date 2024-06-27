@@ -27,6 +27,7 @@ import { API } from './API';
 import { Ticket } from './Ticket';
 import { TicketList } from './TicketList';
 import { LoginForm } from './LoginForm';
+import { CreateTicketForm } from './CreateTicketForm';
 
 function App() {
 	return (
@@ -81,7 +82,6 @@ function Main() {
 								ticket.owner
 							)
 					)
-					// .sort((a, b) => a.name.localeCompare(b.name))
 				);
 				// Loading done
 				setLoading(false);
@@ -130,20 +130,34 @@ function Main() {
 	 *
 	 * @returns a Promise that resolves when the refetch is complete
 	 */
-	const refetchDynamicContent = () => {
-		// Fetch student's info
-		const p2 = API.fetchCurrentUser()
-			.then((user) => {
-				console.log('SETTING USER...');
-				setUser(user);
-			})
-			.catch((err) => {
-				// Remove eventual 401 Unauthorized errors from the list, those are expected
-				console.log('ERRORS SETTING USER\n', err);
-				setErrors(err.filter((e) => e !== 'Not authenticated'));
-			});
+	const refetchDynamicContent = async () => {
+		try {
+			// Fetch user's info
+			const user = await API.fetchCurrentUser();
+			setUser(user);
 
-		return p2;
+			// Load the list of tickets
+			const tickets = await API.fetchTickets();
+			setTickets(
+				tickets.map(
+					(ticket) =>
+						new Ticket(
+							ticket.ticket_id,
+							ticket.state,
+							ticket.category,
+							ticket.title,
+							ticket.initial_text,
+							ticket.submitted_at,
+							ticket.owner
+						)
+				)
+			);
+			// Loading done
+			setLoading(false);
+		} catch (err) {
+			// Remove eventual 401 Unauthorized errors from the list, those are expected
+			setErrors(err.filter((e) => e !== 'Not authenticated'));
+		}
 	};
 
 	/**
@@ -153,18 +167,17 @@ function Main() {
 	 * @param password password of the student
 	 * @param onFinish optional callback to be called on login success or fail
 	 */
-	const login = (email, password, onFinish) => {
-		API.login(email, password)
-			.then(() => {
-				setErrors([]);
-				console.log('BEFORE REFETCH');
-				refetchDynamicContent().then(() => {
-					console.log('AFTER REFETCH');
-					navigate('/');
-				});
-			})
-			.catch((err) => setErrors(err))
-			.finally(() => onFinish?.());
+	const login = async (email, password, onFinish) => {
+		try {
+			await API.login(email, password);
+			setErrors([]);
+			await refetchDynamicContent();
+			navigate('/');
+		} catch (err) {
+			setErrors(err);
+		} finally {
+			onFinish?.();
+		}
 	};
 
 	/**
@@ -176,11 +189,24 @@ function Main() {
 				setUser(undefined);
 				// setSavedStudyPlan(undefined);
 				setAuthToken(undefined);
+				navigate('/');
 			})
 			.catch((err) => {
 				// Remove eventual 401 Unauthorized errors from the list
 				setErrors(err.filter((e) => e !== 'Not authenticated'));
 			});
+	};
+
+	const createTicket = (ticketData, onFinish) => {
+		API.createTicket(ticketData)
+			.then(() => {
+				setErrors([]);
+				refetchDynamicContent().then(() => {
+					navigate('/');
+				});
+			})
+			.catch((err) => setErrors(err))
+			.finally(() => onFinish?.());
 	};
 
 	return (
@@ -205,7 +231,6 @@ function Main() {
 							<HomePage
 								user={user}
 								tickets={tickets}
-								// spActivities={spActivities}
 								errorAlertActive={errors.length > 0}
 								waiting={waiting}
 							/>
@@ -225,8 +250,20 @@ function Main() {
 						)
 					}
 				/>
+				<Route
+					path="create-ticket"
+					element={
+						loading ? (
+							<LoadingSpinner />
+						) : (
+							<CreateTicketForm
+								createTicketCbk={createTicket}
+								errorAlertActive={errors.length > 0}
+							/>
+						)
+					}
+				/>
 			</Route>
-
 			<Route path="*" element={<NotFoundPage />} />
 		</Routes>
 	);
@@ -256,19 +293,9 @@ function HomePage(props) {
 						}}
 					>
 						<Row className="justify-content-center">
-							<Col
-								lg
-								style={{
-									borderRight: props.user && '1px solid #dfdfdf',
-									maxWidth: '70%',
-								}}
-							>
+							<Col lg style={{ maxWidth: '70%' }}>
 								<TicketList />
 							</Col>
-							{
-								// If a user is logged in, show their study plan
-								props.user ? <Col lg>{/* <StudyPlan /> */}</Col> : false
-							}
 						</Row>
 					</Container>
 				</waitingContext.Provider>
@@ -282,8 +309,8 @@ function HomePage(props) {
  *
  * @param props.errors current list of error strings
  * @param props.clearErrors callback to clear all errors
- * @param props.student object with all the currently logged in student's info
- * @param props.logoutCbk callback to perform the student's logout
+ * @param props.student object with all the currently logged in user's info
+ * @param props.logoutCbk callback to perform the user's logout
  */
 function Header(props) {
 	return (

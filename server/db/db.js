@@ -88,6 +88,21 @@ function Database(dbname) {
 	};
 
 	/**
+	 * Create a new study plan for the specified student.
+	 * This function assumes the input to be correct, please validate it beforehand with 'checkStudyPlan'.
+	 *
+	 * @param userId id of the student
+	 *
+	 * @returns a Promise that resolves to nothing on success
+	 */
+	this.createTicket = async (ticket, userId) => {
+		const sql =
+			'INSERT INTO tickets (owner, category, title, initial_text) VALUES (?, ?, ?, ?)';
+		const params = [userId, ticket.category, ticket.title, ticket.description];
+		await dbRunAsync(this.db, sql, params);
+	};
+
+	/**
 	 * Authenticate a user from their email and password
 	 *
 	 * @param email email of the user to authenticate

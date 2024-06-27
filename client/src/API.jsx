@@ -84,12 +84,22 @@ const fetchCurrentUser = async () => await APICall('session/current');
 const getAuthToken = async () =>
 	await APICall('auth-token', 'GET', undefined, undefined, true);
 
+const createTicket = async (ticketData) =>
+	await APICall(
+		'create-ticket',
+		'POST',
+		JSON.stringify(ticketData),
+		{ 'Content-Type': 'application/json' },
+		false
+	);
+
 const API = {
 	fetchTickets,
 	fetchCurrentUser,
 	logout,
 	login,
 	getAuthToken,
+	createTicket,
 };
 
 export { API };

@@ -46,6 +46,39 @@ app.get('/api/tickets', async (req, res) => {
 	}
 });
 
+/**
+ * Create a new ticket for the currently logged in user
+ */
+app.post(
+	'/api/create-ticket',
+	isLoggedIn,
+	// body('fullTime', 'fullTime must be a boolean').isBoolean(),
+	// body('courses', 'No courses specified').isArray().isLength({ min: 1 }),
+	// body('courses.*', 'Invalid course(s)')
+	// 	.trim()
+	// 	.toUpperCase()
+	// 	.isString()
+	// 	.isLength({ min: 7, max: 7 }),
+	async (req, res) => {
+		// Check if validation is ok
+		const err = validationResult(req);
+		const errList = [];
+		if (!err.isEmpty()) {
+			errList.push(...err.errors.map((e) => e.msg));
+			return res.status(400).json({ errors: errList });
+		}
+
+		try {
+			// Perform the actual insertions
+			await db.createTicket(req.body, req.user.id);
+			res.end();
+		} catch (err) {
+			console.log(err);
+			return res.status(500).json({ errors: ['Database error'] });
+		}
+	}
+);
+
 /*
  * Authenticate and login
  */
