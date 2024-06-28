@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Form, Button, Container, Row, Col, Spinner } from 'react-bootstrap';
 import validator from 'validator';
+import TicketConfirmation from './TicketConfirmation'; // Import the TicketConfirmation component
 
 /**
  * The submit ticket page displayed on "/create-ticket"
@@ -21,6 +22,7 @@ function CreateTicketForm(props) {
 		description: true,
 	});
 	const [waiting, setWaiting] = useState(false);
+	const [isConfirming, setIsConfirming] = useState(false); // State to manage form confirmation step
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -28,7 +30,6 @@ function CreateTicketForm(props) {
 		setFormValid({ ...formValid, [name]: true }); // Reset validation state on change
 	};
 
-	// TODO goto page to accept submission of the ticket, and also show the estimated time to get a response
 	const handleSubmit = (event) => {
 		event.preventDefault();
 
@@ -38,8 +39,7 @@ function CreateTicketForm(props) {
 		const descriptionValid = !validator.isEmpty(formData.description);
 
 		if (titleValid && categoryValid && descriptionValid) {
-			setWaiting(true);
-			props.createTicketCbk(formData, () => setWaiting(false));
+			setIsConfirming(true); // Switch to confirmation step
 		} else {
 			setFormValid({
 				title: titleValid,
@@ -48,6 +48,25 @@ function CreateTicketForm(props) {
 			});
 		}
 	};
+
+	const handleDiscard = () => {
+		setIsConfirming(false); // Go back to form
+	};
+
+	const handleConfirm = () => {
+		setWaiting(true);
+		props.createTicketCbk(formData, () => setWaiting(false));
+	};
+
+	if (isConfirming) {
+		return (
+			<TicketConfirmation
+				ticketData={formData}
+				onDiscard={handleDiscard}
+				onConfirm={handleConfirm}
+			/>
+		);
+	}
 
 	return (
 		<Container style={{ marginTop: props.errorAlertActive ? '2rem' : '6rem' }}>
