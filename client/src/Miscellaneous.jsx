@@ -16,8 +16,8 @@ const ticketsContext = createContext();
 /** Context used to propagate the user object */
 const userContext = createContext();
 
-/** Context used to propagate all the study plan related functions */
-const spActivitiesContext = createContext();
+/** Context used to propagate all the ticket related functions */
+const ticketActionsContext = createContext();
 
 /** Context used to propagate the waiting state to everything that might need it */
 const waitingContext = createContext();
@@ -302,7 +302,7 @@ export {
 	ErrorsAlert,
 	ticketsContext,
 	userContext,
-	spActivitiesContext,
+	ticketActionsContext,
 	waitingContext,
 	SmallRoundButton,
 	checkCourseConstraints,

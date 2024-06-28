@@ -64,7 +64,8 @@ function Database(dbname) {
 				tickets.title,
 				tickets.initial_text,
 				tickets.submitted_at,
-				users.name AS owner
+				users.name AS owner,
+				tickets.owner AS owner_id
 			FROM 
 				tickets
 			JOIN 
@@ -112,6 +113,25 @@ function Database(dbname) {
 		const sql =
 			'INSERT INTO tickets (owner, category, title, initial_text) VALUES (?, ?, ?, ?)';
 		const params = [userId, ticket.category, ticket.title, ticket.description];
+		await dbRunAsync(this.db, sql, params);
+	};
+
+	/**
+	 * Change the state of a ticket
+	 *
+	 * @param ticketId ID of the ticket to update
+	 * @param newState New state of the ticket (either "Open" or "Closed")
+	 * @param userId ID of the user making the change (to verify ownership)
+	 *
+	 * @returns a Promise that resolves to nothing on success
+	 */
+	this.updateTicketState = async (ticketId, newState, userId) => {
+		const sql = `
+		UPDATE tickets
+		SET state = ?
+		WHERE ticket_id = ? AND owner = ?
+	`;
+		const params = [newState, ticketId, userId];
 		await dbRunAsync(this.db, sql, params);
 	};
 

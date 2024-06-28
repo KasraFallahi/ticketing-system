@@ -14,7 +14,7 @@ import {
 	MyNavbar,
 	ticketsContext,
 	userContext,
-	spActivitiesContext,
+	ticketActionsContext,
 	checkStudyPlanModified,
 	waitingContext,
 	NotFoundPage,
@@ -80,7 +80,8 @@ function Main() {
 								ticket.initial_text,
 								ticket.submitted_at,
 								ticket.owner,
-								ticket.text_blocks
+								ticket.text_blocks,
+								ticket.owner_id
 							)
 					)
 				);
@@ -150,7 +151,8 @@ function Main() {
 							ticket.initial_text,
 							ticket.submitted_at,
 							ticket.owner,
-							ticket.text_blocks
+							ticket.text_blocks,
+							ticket.owner_id
 						)
 				)
 			);
@@ -211,6 +213,31 @@ function Main() {
 			.finally(() => onFinish?.());
 	};
 
+	/**
+	 * Edit the state of an existing ticket
+	 *
+	 * @param ticketId ID of the ticket to edit
+	 * @param newState New state of the ticket (either "Open" or "Closed")
+	 * @param onFinish optional callback to be called on edit success or fail
+	 */
+	const editTicketState = (ticketId, newState, onFinish) => {
+		setLoading(true);
+		API.editTicketState(ticketId, newState)
+			.then(() => {
+				setErrors([]);
+				refetchDynamicContent().then(() => {
+					navigate('/');
+				});
+			})
+			.catch((err) => setErrors(err))
+			.finally(async () => {
+				onFinish?.();
+				refetchDynamicContent();
+			});
+	};
+
+	const ticketActions = { editTicketState };
+
 	return (
 		<Routes>
 			<Route
@@ -235,6 +262,7 @@ function Main() {
 								tickets={tickets}
 								errorAlertActive={errors.length > 0}
 								waiting={waiting}
+								ticketActions={ticketActions}
 							/>
 						)
 					}
@@ -284,23 +312,25 @@ function HomePage(props) {
 	return (
 		<ticketsContext.Provider value={props.tickets}>
 			<userContext.Provider value={props.user}>
-				<waitingContext.Provider value={props.waiting}>
-					<Container
-						fluid
-						style={{
-							paddingLeft: '2rem',
-							paddingRight: '2rem',
-							paddingBottom: '1rem',
-							marginTop: props.errorAlertActive ? '2rem' : '6rem',
-						}}
-					>
-						<Row className="justify-content-center">
-							<Col lg style={{ maxWidth: '70%' }}>
-								<TicketList />
-							</Col>
-						</Row>
-					</Container>
-				</waitingContext.Provider>
+				<ticketActionsContext.Provider value={props.ticketActions}>
+					<waitingContext.Provider value={props.waiting}>
+						<Container
+							fluid
+							style={{
+								paddingLeft: '2rem',
+								paddingRight: '2rem',
+								paddingBottom: '1rem',
+								marginTop: props.errorAlertActive ? '2rem' : '6rem',
+							}}
+						>
+							<Row className="justify-content-center">
+								<Col lg style={{ maxWidth: '70%' }}>
+									<TicketList />
+								</Col>
+							</Row>
+						</Container>
+					</waitingContext.Provider>
+				</ticketActionsContext.Provider>
 			</userContext.Provider>
 		</ticketsContext.Provider>
 	);

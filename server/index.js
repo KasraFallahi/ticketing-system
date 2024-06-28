@@ -79,6 +79,40 @@ app.post(
 	}
 );
 
+/**
+ * Edit the state of an existing ticket for the currently logged-in user
+ */
+app.patch('/api/ticket/:id', isLoggedIn, async (req, res) => {
+	// Check if validation is ok
+	const err = validationResult(req);
+	const errList = [];
+	if (!err.isEmpty()) {
+		errList.push(...err.errors.map((e) => e.msg));
+		return res.status(400).json({ errors: errList });
+	}
+
+	const { state } = req.body;
+	const validStates = ['Open', 'Closed'];
+
+	// Validate the state
+	if (!validStates.includes(state)) {
+		return res.status(400).json({
+			errors: ['Invalid state. State must be either "Open" or "Closed"'],
+		});
+	}
+
+	try {
+		const ticketId = req.params.id;
+
+		// Perform the actual update
+		await db.updateTicketState(ticketId, state, req.user.id);
+		res.end();
+	} catch (err) {
+		console.log(err);
+		return res.status(500).json({ errors: ['Database error'] });
+	}
+});
+
 /*
  * Authenticate and login
  */
@@ -104,6 +138,7 @@ app.post(
 					if (err) return next(err);
 					else {
 						res.json({
+							id: user.id,
 							email: user.username,
 							name: user.name,
 						});
@@ -127,6 +162,7 @@ app.delete('/api/session', isLoggedIn, (req, res) => {
  */
 app.get('/api/session/current', isLoggedIn, async (req, res) => {
 	res.json({
+		id: req.user.id,
 		email: req.user.username,
 		name: req.user.name,
 	});

@@ -9,12 +9,13 @@ import {
 	Tooltip,
 	Button,
 	ListGroup,
+	Form,
 } from 'react-bootstrap';
 import {
 	checkCourseConstraints,
 	ticketsContext,
 	SmallRoundButton,
-	spActivitiesContext,
+	ticketActionsContext,
 	userContext,
 	waitingContext,
 } from './Miscellaneous';
@@ -71,7 +72,7 @@ function TicketList() {
 						State
 					</Col>
 					<Col md={1} className="text-center">
-						Owner(s)
+						Owner
 					</Col>
 					<Col md={1} className="text-center">
 						Category
@@ -301,44 +302,6 @@ function TicketItem(props) {
 }
 
 /**
- * A SmallRoundButton component specified to the needs of the app
- *
- * @param props.constraints result of the call to "checkCourseConstraints"
- * @param props.course Course object of the course this button is associated with
- */
-function ContextualButton(props) {
-	const student = useContext(userContext);
-	const spa = useContext(spActivitiesContext);
-	const waiting = useContext(waitingContext);
-
-	let inner;
-	let variant;
-	let onClick;
-
-	// Find out if this must be a add or a remove button.
-	// Note: this component gets rendered only if a study plan exists
-	if (student.studyPlan?.includes(props.course.code)) {
-		inner = <i className="bi bi-dash" />;
-		variant = 'danger';
-		onClick = () => spa.removeCourseFromSP(props.course.code);
-	} else {
-		inner = <i className="bi bi-plus" />;
-		variant = 'success';
-		onClick = () => spa.addCourseToSP(props.course.code);
-	}
-
-	return (
-		<SmallRoundButton
-			inner={inner}
-			variant={variant}
-			tooltip={props.constraints.reason || ''}
-			disabled={!props.constraints.result || waiting}
-			onClick={onClick}
-		/>
-	);
-}
-
-/**
  * Details for the CourseItem.
  * This is shown when the corresponding course's row is clicked
  *
@@ -348,10 +311,41 @@ function ContextualButton(props) {
  * @param props.reason reason why this course is disabled (as returned by "checkCourseConstraints")
  */
 function TicketItemDetails(props) {
+	const user = useContext(userContext);
+	const [newTextBlock, setNewTextBlock] = useState('');
+	const ticketActions = useContext(ticketActionsContext);
+	const [waiting, setWaiting] = useState(false);
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		// Handle the form submission logic here
+		// For example, send the new text block to the server
+		console.log('New text block submitted:', newTextBlock);
+		// Clear the textarea after submission
+		setNewTextBlock('');
+	};
+
+	const handleCloseTicket = () => {
+		if (window.confirm('Are you sure you want to close this ticket?')) {
+			ticketActions.editTicketState(props.ticket.ticket_id, 'Closed'),
+				() => setWaiting(false);
+		}
+	};
+
 	return (
 		<Container>
-			<p>{props.ticket.initial_text}</p>
-			<ListGroup className="mx-3">
+			<div className="d-flex justify-content-between align-items-center">
+				<p className="mb-0">{props.ticket.initial_text}</p>
+				{props.ticket.state === 'Open' &&
+					user &&
+					user.id === props.ticket.owner_id && (
+						<Button variant="danger" onClick={handleCloseTicket}>
+							<i className="bi bi-x-circle me-2" />
+							Close Ticket
+						</Button>
+					)}
+			</div>
+			<ListGroup className="mx-3 mt-3">
 				{props.ticket.text_blocks.map((text_block) => (
 					<ListGroup.Item
 						key={text_block.text_block_id}
@@ -373,6 +367,23 @@ function TicketItemDetails(props) {
 					</ListGroup.Item>
 				))}
 			</ListGroup>
+			{user && props.ticket.state === 'Open' && (
+				<Form onSubmit={handleSubmit} className="mx-3 mt-3">
+					<Form.Group controlId="newTextBlock">
+						<Form.Label>Add Reply</Form.Label>
+						<Form.Control
+							as="textarea"
+							rows={3}
+							value={newTextBlock}
+							onChange={(e) => setNewTextBlock(e.target.value)}
+							placeholder="Type your reply here..."
+						/>
+					</Form.Group>
+					<Button type="submit" variant="primary" className="mt-2">
+						Submit Reply
+					</Button>
+				</Form>
+			)}
 		</Container>
 	);
 }

@@ -53,6 +53,23 @@ const APICall = async (
 const fetchTickets = async () => await APICall('tickets');
 
 /**
+ * Edits the state of a ticket
+ *
+ * @param ticketId ID of the ticket to edit
+ * @param newState New state of the ticket (either "Open" or "Closed")
+ *
+ * @returns updated ticket response
+ */
+const editTicketState = async (ticketId, newState) =>
+	await APICall(
+		`ticket/${ticketId}`,
+		'PATCH',
+		JSON.stringify({ state: newState }),
+		{ 'Content-Type': 'application/json' },
+		false
+	);
+
+/**
  * Attempts to login the student
  *
  * @param email email of the student
@@ -100,6 +117,7 @@ const API = {
 	login,
 	getAuthToken,
 	createTicket,
+	editTicketState,
 };
 
 export { API };
