@@ -1,15 +1,14 @@
 import { useContext, useState } from 'react';
 import {
 	Accordion,
-	Table,
 	Badge,
 	Col,
 	Container,
 	OverlayTrigger,
 	Row,
 	Tooltip,
-	Card,
 	Button,
+	ListGroup,
 } from 'react-bootstrap';
 import {
 	checkCourseConstraints,
@@ -118,12 +117,7 @@ function TicketList() {
 									</Container>
 								</Accordion.Header>
 								<Accordion.Body>
-									{/* <CourseItemDetails
-									course={props.course}
-									toggleAccent={props.toggleAccent}
-									disabled={!constrOk}
-									reason={constraints?.reason}
-								/> */}
+									<TicketItemDetails ticket={ticket} />
 								</Accordion.Body>
 							</Accordion.Item>
 						</Col>
@@ -353,68 +347,33 @@ function ContextualButton(props) {
  * @param props.disabled boolean, used when the course is incompatible with the current study plan
  * @param props.reason reason why this course is disabled (as returned by "checkCourseConstraints")
  */
-function CourseItemDetails(props) {
-	const courses = useContext(ticketsContext);
-
-	const mandatoryCourse = courses.find(
-		(c) => c.code === props.course.mandatory
-	) || { code: props.course.mandatory, name: 'Unknown course' };
-	const incompatibleList = props.course.incompat
-		.map(
-			(i) =>
-				courses.find((c) => c.code === i) || { code: i, name: 'Unknown course' }
-		)
-		.flatMap((c, i, a) => [
-			<CourseCodeHoverable
-				key={c.code}
-				color="black"
-				course={c}
-				toggleAccent={() => props.toggleAccent(c.code)}
-			/>,
-			i < a.length - 1 ? ', ' : false,
-		]);
-
+function TicketItemDetails(props) {
 	return (
-		<div>
-			{props.disabled ? (
-				<>
-					<em>{props.reason}</em>
-					<br />
-					<br />
-				</>
-			) : (
-				false
-			)}
-			{props.disabled ? (
-				<em style={{ color: 'grey' }}>Mandatory: </em>
-			) : (
-				'Mandatory: '
-			)}
-			{props.course.mandatory ? (
-				<CourseCodeHoverable
-					course={mandatoryCourse}
-					color="red"
-					toggleAccent={() => props.toggleAccent(props.course.mandatory)}
-				/>
-			) : (
-				<strong style={{ color: 'green' }}>
-					None <i className="bi bi-check" />
-				</strong>
-			)}
-			<br />
-			{props.disabled ? (
-				<em style={{ color: 'grey' }}>Incompatible: </em>
-			) : (
-				'Incompatible: '
-			)}
-			{incompatibleList.length !== 0 ? (
-				incompatibleList
-			) : (
-				<strong style={{ color: 'green' }}>
-					None <i className="bi bi-check" />
-				</strong>
-			)}
-		</div>
+		<Container>
+			<p>{props.ticket.initial_text}</p>
+			<ListGroup className="mx-3">
+				{props.ticket.text_blocks.map((text_block) => (
+					<ListGroup.Item
+						key={text_block.text_block_id}
+						className="mb-3 border-0 px-0"
+					>
+						<Row>
+							<Col xs="auto" className="d-flex flex-column align-items-start">
+								<i
+									className="bi bi-person-circle"
+									style={{ fontSize: '2rem' }}
+								></i>
+							</Col>
+							<Col className="ps-2">
+								<div className="fw-bold">{text_block.author}</div>
+								<div className="text-muted">{text_block.submitted_at}</div>
+								<div className="mt-2">{text_block.text}</div>
+							</Col>
+						</Row>
+					</ListGroup.Item>
+				))}
+			</ListGroup>
+		</Container>
 	);
 }
 

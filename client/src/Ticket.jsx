@@ -16,7 +16,8 @@ function Ticket(
 	title,
 	initial_text,
 	submitted_at,
-	owner
+	owner,
+	text_blocks
 ) {
 	this.ticket_id = ticket_id;
 	this.state = state;
@@ -25,6 +26,7 @@ function Ticket(
 	this.initial_text = initial_text;
 	this.submitted_at = submitted_at;
 	this.owner = owner;
+	this.text_blocks = text_blocks;
 }
 
 export { Ticket };

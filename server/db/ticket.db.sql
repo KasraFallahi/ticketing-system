@@ -24,9 +24,10 @@ CREATE TABLE IF NOT EXISTS "text_blocks" (
   "text_block_id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "ticket_id" INTEGER NOT NULL,
   "text" TEXT NOT NULL,
-  "author" VARCHAR(255) NOT NULL,
+  "author" INTEGER NOT NULL,
   "submitted_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id)
+  FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id),
+  FOREIGN KEY (author) REFERENCES users(user_id)
 );
 
 INSERT INTO users ("email", "name", "hash", "salt")
@@ -43,8 +44,8 @@ VALUES
 
 INSERT INTO text_blocks ("ticket_id", "text", "author")
 VALUES
-  (1, 'We are investigating the performance issue you reported. We will get back to you soon.', 'support@example.com'),
-  (2, 'You can submit a vacation request by logging into the employee portal and navigating to the time-off section.', 'human_resources@example.com'),
-  (3, 'Thank you for your feature request! We will consider it for future development.', 'product_team@example.com');
+  (1, 'We are investigating the performance issue you reported. We will get back to you soon.', 1),
+  (2, 'You can submit a vacation request by logging into the employee portal and navigating to the time-off section.', 2),
+  (3, 'Thank you for your feature request! We will consider it for future development.', 1);
 
 COMMIT;

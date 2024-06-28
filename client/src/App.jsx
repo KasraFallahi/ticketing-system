@@ -79,7 +79,8 @@ function Main() {
 								ticket.title,
 								ticket.initial_text,
 								ticket.submitted_at,
-								ticket.owner
+								ticket.owner,
+								ticket.text_blocks
 							)
 					)
 				);
@@ -148,7 +149,8 @@ function Main() {
 							ticket.title,
 							ticket.initial_text,
 							ticket.submitted_at,
-							ticket.owner
+							ticket.owner,
+							ticket.text_blocks
 						)
 				)
 			);
