@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import {
 	ErrorsAlert,
+	SuccessAlert,
 	MyNavbar,
 	ticketsContext,
 	userContext,
@@ -48,8 +49,11 @@ function Main() {
 	/** Flags initial loading of the app */
 	const [loading, setLoading] = useState(true);
 
-	/** A list of errors */
+	/** A list of error messages */
 	const [errors, setErrors] = useState([]);
+
+	/** A list of success messages */
+	const [success, setSuccess] = useState('');
 
 	/** Network-related waiting, like after pressing save or delete study plan. When waiting all controls are disabled. */
 	const [waiting, setWaiting] = useState(false);
@@ -205,6 +209,7 @@ function Main() {
 		API.createTicket(ticketData)
 			.then(() => {
 				setErrors([]);
+				setSuccess('Ticket submitted successfully');
 				refetchDynamicContent().then(() => {
 					navigate('/');
 				});
@@ -225,6 +230,7 @@ function Main() {
 		API.editTicketState(ticketId, newState)
 			.then(() => {
 				setErrors([]);
+				setSuccess(`Ticket state changed to ${newState}`);
 				refetchDynamicContent().then(() => {
 					navigate('/');
 				});
@@ -246,6 +252,7 @@ function Main() {
 		API.addTextBlock(ticketId, text)
 			.then(() => {
 				setErrors([]);
+				setSuccess('Your reply added successfully');
 				refetchDynamicContent().then(() => {
 					navigate('/');
 				});
@@ -266,6 +273,8 @@ function Main() {
 						logoutCbk={logout}
 						errors={errors}
 						clearErrors={() => setErrors([])}
+						success={success}
+						clearSuccess={() => setSuccess('')}
 					/>
 				}
 			>
@@ -358,18 +367,19 @@ function HomePage(props) {
  * Header of the page, containing the navbar and, potentially, the error alert
  *
  * @param props.errors current list of error strings
- * @param props.clearErrors callback to clear all errors
- * @param props.student object with all the currently logged in user's info
+ * @param props.success current success message
+ * @param props.user object with all the currently logged in user's info
  * @param props.logoutCbk callback to perform the user's logout
  */
 function Header(props) {
 	return (
 		<>
 			<MyNavbar user={props.user} logoutCbk={props.logoutCbk} />
-			{props.errors.length > 0 ? (
+			{props.errors.length > 0 && (
 				<ErrorsAlert errors={props.errors} clear={props.clearErrors} />
-			) : (
-				false
+			)}
+			{props.success && (
+				<SuccessAlert message={props.success} clear={props.clearSuccess} />
 			)}
 			<Outlet />
 		</>

@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useEffect } from 'react';
 import {
 	Alert,
 	Button,
@@ -110,6 +110,14 @@ function NotFoundPage() {
  * @param props.clear callback to clear all errors
  */
 function ErrorsAlert(props) {
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			props.clear();
+		}, 5000); // Adjust the duration as needed (5000ms = 5 seconds)
+
+		return () => clearTimeout(timer);
+	}, [props]);
+
 	return (
 		<Alert
 			variant="danger"
@@ -128,6 +136,33 @@ function ErrorsAlert(props) {
 							))}
 						</ul>,
 				  ]}
+		</Alert>
+	);
+}
+
+/**
+ * Bootstrap's Alert component used to show success messages
+ *
+ * @param props.message the success message to show
+ * @param props.clear callback to clear the success message
+ */
+function SuccessAlert(props) {
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			props.clear();
+		}, 5000); // Adjust the duration as needed (5000ms = 5 seconds)
+
+		return () => clearTimeout(timer);
+	}, [props]);
+
+	return (
+		<Alert
+			variant="success"
+			dismissible
+			onClose={props.clear}
+			style={{ margin: '2rem', marginTop: '6rem' }}
+		>
+			{props.message}
 		</Alert>
 	);
 }
@@ -300,6 +335,7 @@ export {
 	MyNavbar,
 	NotFoundPage,
 	ErrorsAlert,
+	SuccessAlert,
 	ticketsContext,
 	userContext,
 	ticketActionsContext,
