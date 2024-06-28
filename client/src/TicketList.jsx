@@ -10,6 +10,7 @@ import {
 	Button,
 	ListGroup,
 	Form,
+	Spinner,
 } from 'react-bootstrap';
 import {
 	checkCourseConstraints,
@@ -20,6 +21,7 @@ import {
 	waitingContext,
 } from './Miscellaneous';
 import { useNavigate } from 'react-router-dom';
+import validator from 'validator';
 
 /**
  * List of all the courses.
@@ -312,23 +314,37 @@ function TicketItem(props) {
  */
 function TicketItemDetails(props) {
 	const user = useContext(userContext);
-	const [newTextBlock, setNewTextBlock] = useState('');
 	const ticketActions = useContext(ticketActionsContext);
+	const [newTextBlock, setNewTextBlock] = useState('');
+	const [textBlockError, setTextBlockError] = useState('');
 	const [waiting, setWaiting] = useState(false);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		// Handle the form submission logic here
-		// For example, send the new text block to the server
-		console.log('New text block submitted:', newTextBlock);
-		// Clear the textarea after submission
-		setNewTextBlock('');
+
+		// Validate form
+		const trimmedTextBlock = newTextBlock.trim();
+		const textBlockError = validator.isEmpty(trimmedTextBlock)
+			? 'Text block must not be empty'
+			: '';
+
+		if (!textBlockError) {
+			setWaiting(true);
+			ticketActions.addTextBlock(props.ticket.ticket_id, newTextBlock, () =>
+				setWaiting(false)
+			);
+			setNewTextBlock('');
+		} else {
+			setTextBlockError(textBlockError);
+		}
 	};
 
 	const handleCloseTicket = () => {
 		if (window.confirm('Are you sure you want to close this ticket?')) {
-			ticketActions.editTicketState(props.ticket.ticket_id, 'Closed'),
-				() => setWaiting(false);
+			setWaiting(true);
+			ticketActions.editTicketState(props.ticket.ticket_id, 'Closed', () =>
+				setWaiting(false)
+			);
 		}
 	};
 
@@ -339,8 +355,22 @@ function TicketItemDetails(props) {
 				{props.ticket.state === 'Open' &&
 					user &&
 					user.id === props.ticket.owner_id && (
-						<Button variant="danger" onClick={handleCloseTicket}>
-							<i className="bi bi-x-circle me-2" />
+						<Button
+							variant="danger"
+							onClick={handleCloseTicket}
+							disabled={waiting}
+						>
+							{waiting ? (
+								<Spinner
+									as="span"
+									animation="border"
+									size="sm"
+									role="status"
+									aria-hidden="true"
+								/>
+							) : (
+								<i className="bi bi-x-circle me-2" />
+							)}
 							Close Ticket
 						</Button>
 					)}
@@ -375,12 +405,36 @@ function TicketItemDetails(props) {
 							as="textarea"
 							rows={3}
 							value={newTextBlock}
-							onChange={(e) => setNewTextBlock(e.target.value)}
+							isInvalid={!!textBlockError}
+							onChange={(e) => {
+								setNewTextBlock(e.target.value);
+								setTextBlockError('');
+							}}
 							placeholder="Type your reply here..."
 						/>
+						<Form.Control.Feedback type="invalid">
+							{textBlockError}
+						</Form.Control.Feedback>
 					</Form.Group>
-					<Button type="submit" variant="primary" className="mt-2">
-						Submit Reply
+					<Button
+						type="submit"
+						variant="primary"
+						className="mt-2"
+						disabled={waiting}
+					>
+						{waiting ? (
+							<>
+								<Spinner
+									as="span"
+									animation="border"
+									size="sm"
+									role="status"
+									aria-hidden="true"
+								/>{' '}
+							</>
+						) : (
+							'Submit Reply'
+						)}
 					</Button>
 				</Form>
 			)}

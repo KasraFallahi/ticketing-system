@@ -136,6 +136,24 @@ function Database(dbname) {
 	};
 
 	/**
+	 * Add a text block to a ticket
+	 *
+	 * @param ticketId ID of the ticket to add the text block to
+	 * @param userId ID of the user adding the text block
+	 * @param text Text of the text block
+	 *
+	 * @returns a Promise that resolves to nothing on success
+	 */
+	this.addTextBlock = async (ticketId, userId, text) => {
+		const sql = `
+		INSERT INTO text_blocks (ticket_id, author, text)
+		VALUES (?, ?, ?)
+	`;
+		const params = [ticketId, userId, text];
+		await dbRunAsync(this.db, sql, params);
+	};
+
+	/**
 	 * Authenticate a user from their email and password
 	 *
 	 * @param email email of the user to authenticate

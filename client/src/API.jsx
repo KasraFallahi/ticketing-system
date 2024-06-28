@@ -70,6 +70,23 @@ const editTicketState = async (ticketId, newState) =>
 	);
 
 /**
+ * Add a text block to a ticket
+ *
+ * @param ticketId ID of the ticket to add the text block to
+ * @param text Text of the text block
+ *
+ * @returns a Promise that resolves to the response of the API call
+ */
+const addTextBlock = async (ticketId, text) =>
+	await APICall(
+		`ticket/${ticketId}/text-block`,
+		'POST',
+		JSON.stringify({ text }),
+		{ 'Content-Type': 'application/json' },
+		false
+	);
+
+/**
  * Attempts to login the student
  *
  * @param email email of the student
@@ -118,6 +135,7 @@ const API = {
 	getAuthToken,
 	createTicket,
 	editTicketState,
+	addTextBlock,
 };
 
 export { API };

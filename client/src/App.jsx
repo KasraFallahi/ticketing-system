@@ -230,13 +230,31 @@ function Main() {
 				});
 			})
 			.catch((err) => setErrors(err))
-			.finally(async () => {
-				onFinish?.();
-				refetchDynamicContent();
-			});
+			.finally(async () => onFinish?.());
 	};
 
-	const ticketActions = { editTicketState };
+	/**
+	 * Add a text block to a ticket
+	 *
+	 * @param ticketId ID of the ticket to add the text block to
+	 * @param userId ID of the user adding the text block
+	 * @param text Text of the text block
+	 * @param onFinish optional callback to be called on success or fail
+	 */
+	const addTextBlock = (ticketId, text, onFinish) => {
+		setLoading(true);
+		API.addTextBlock(ticketId, text)
+			.then(() => {
+				setErrors([]);
+				refetchDynamicContent().then(() => {
+					navigate('/');
+				});
+			})
+			.catch((err) => setErrors(err))
+			.finally(async () => onFinish?.());
+	};
+
+	const ticketActions = { editTicketState, addTextBlock };
 
 	return (
 		<Routes>

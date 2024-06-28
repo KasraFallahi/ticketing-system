@@ -113,6 +113,37 @@ app.patch('/api/ticket/:id', isLoggedIn, async (req, res) => {
 	}
 });
 
+/**
+ * Add a text block to an existing ticket for the currently logged-in user
+ */
+app.post(
+	'/api/ticket/:id/text-block',
+	isLoggedIn,
+	[body('text').notEmpty().withMessage('Text block content is required')],
+	async (req, res) => {
+		// Check if validation is ok
+		const err = validationResult(req);
+		const errList = [];
+		if (!err.isEmpty()) {
+			errList.push(...err.errors.map((e) => e.msg));
+			return res.status(400).json({ errors: errList });
+		}
+
+		const ticketId = req.params.id;
+		const userId = req.user.id;
+		const { text } = req.body;
+
+		try {
+			// Perform the actual insertion
+			await db.addTextBlock(ticketId, userId, text);
+			res.end();
+		} catch (err) {
+			console.log(err);
+			return res.status(500).json({ errors: ['Database error'] });
+		}
+	}
+);
+
 /*
  * Authenticate and login
  */
