@@ -106,18 +106,6 @@
   - **Response body**: Empty on success, or a JSON object with error description.
   - Codes: `200 OK`, `401 Unauthorized`.
 
-* **GET `/api/session/current`**: Get info on the logged in user.
-
-  - **Response body**: JSON object with user details if authenticated, or a JSON object with error description:
-    ```
-    {
-      "id": 1,
-      "email": "user@example.com",
-      "name": "John Doe"
-    }
-    ```
-  - Codes: `200 OK`, `401 Unauthorized`.
-
 * **GET `/api/auth-token`**: Get an auth token for the logged in user.
   - **Response body**: JSON object with the token.
     ```

@@ -151,11 +151,6 @@ const logout = async () =>
 	await APICall('session', 'DELETE', undefined, undefined, false);
 
 /**
- * Fetches the currently logged in user's info
- */
-const fetchCurrentUser = async () => await APICall('session/current');
-
-/**
  * Fetches the token to access the second server
  */
 const getAuthToken = async () =>
@@ -172,7 +167,6 @@ const createTicket = async (ticketData) =>
 
 const API = {
 	fetchTickets,
-	fetchCurrentUser,
 	logout,
 	login,
 	getAuthToken,

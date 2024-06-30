@@ -210,20 +210,7 @@ app.delete('/api/session', isLoggedIn, (req, res) => {
 });
 
 /**
- * Check if the user is logged in and return their info
- */
-app.get('/api/session/current', isLoggedIn, async (req, res) => {
-	res.json({
-		id: req.user.id,
-		email: req.user.username,
-		name: req.user.name,
-		is_admin: req.user.is_admin,
-	});
-});
-
-/*** Token ***/
-/**
- * Get token
+ * Get JWT token
  */
 app.get('/api/auth-token', isLoggedIn, (req, res) => {
 	const payloadToSign = { userId: req.user.id };

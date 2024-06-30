@@ -194,6 +194,7 @@ function Database(dbname) {
 								id: user.user_id,
 								username: user.email,
 								name: user.name,
+								is_admin: user.is_admin,
 							});
 						// Avoid full_time = null being cast to false
 						else resolve(false);
@@ -212,7 +213,7 @@ function Database(dbname) {
 	this.getUser = async (id) => {
 		const user = await dbGetAsync(
 			this.db,
-			'SELECT email as username, name, is_admin FROM users WHERE user_id = ?',
+			'SELECT email as username, name FROM users WHERE user_id = ?',
 			[id]
 		);
 
