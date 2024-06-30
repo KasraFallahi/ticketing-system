@@ -52,12 +52,18 @@
   - **Response body**: Empty on success, or a JSON object with error description.
   - Codes: `200 OK`, `400 Bad Request` (invalid request body), `401 Unauthorized`, `500 Internal Server Error`.
 
-- **PATCH `/api/ticket/:id`**: Edit the state of an existing ticket for the currently logged-in user.
+- **PATCH `/api/ticket/:id`**: Edit the state or category of an existing ticket for the currently logged-in user.
 
-  - **Request body**: JSON object with the new state:
+  - **Request body**: JSON object with the new state or category. Only one of the fields (either `state` or `category`) is required:
     ```
     {
       "state": "Closed"
+    }
+    ```
+    or
+    ```
+    {
+      "category": "maintenance"
     }
     ```
   - **Response body**: Empty on success, or a JSON object with error description.
