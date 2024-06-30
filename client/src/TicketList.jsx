@@ -62,7 +62,7 @@ function TicketList() {
 					<Col className="text-start" md={4} style={{ paddingLeft: '2.5rem' }}>
 						Title
 					</Col>
-					<Col md={2} className="text-center">
+					<Col md={2} className="text-start" style={{ paddingLeft: '1.5rem' }}>
 						Category
 					</Col>
 					<Col md={2} className="text-center">
@@ -331,7 +331,9 @@ function TicketItemDetails(props) {
 							<Col className="ps-2">
 								<div className="fw-bold">{text_block.author}</div>
 								<div className="text-muted">{text_block.submitted_at}</div>
-								<div className="mt-2">{text_block.text}</div>
+								<div className="mt-2" style={{ whiteSpace: 'pre-wrap' }}>
+									{text_block.text}
+								</div>
 							</Col>
 						</Row>
 					</ListGroup.Item>
