@@ -67,34 +67,71 @@ function Main() {
 	/** The list of tickets */
 	const [tickets, setTickets] = useState([]);
 
+	/** State of new tickets added */
+	const [newTickets, setnewTickets] = useState(false);
+
 	useEffect(() => {
-		// Load the list of tickets
-		API.fetchTickets()
-			.then((res) => {
-				setTickets(
-					res.map(
-						(ticket) =>
-							new Ticket(
-								ticket.ticket_id,
-								ticket.state,
-								ticket.category,
-								ticket.title,
-								ticket.initial_text,
-								ticket.submitted_at,
-								ticket.owner,
-								ticket.text_blocks,
-								ticket.owner_id
-							)
-					)
+		const fetchTicketsWithEstimates = async () => {
+			try {
+				// Load the list of tickets
+				const res = await API.fetchTickets();
+				const tickets = res.map(
+					(ticket) =>
+						new Ticket(
+							ticket.ticket_id,
+							ticket.state,
+							ticket.category,
+							ticket.title,
+							ticket.initial_text,
+							ticket.submitted_at,
+							ticket.owner,
+							ticket.text_blocks,
+							ticket.owner_id,
+							null // Placeholder for est_closure
+						)
 				);
-				// Loading done
-				setLoading(false);
-			})
-			.catch((err) => {
+
+				if (user && user.is_admin === 1) {
+					// Extract titles and categories for estimation
+					const ticketData = tickets.map((ticket) => ({
+						title: ticket.title,
+						category: ticket.category,
+					}));
+
+					// Ensure token is valid
+					let currentAuthToken = authToken;
+					if (!authToken || Date.now() >= tokenExpiration) {
+						const response = await API.getAuthToken();
+						currentAuthToken = response.token;
+						setAuthToken(currentAuthToken);
+						setTokenExpiration(Date.now() + 60000); // Set expiration time to 60 seconds
+					}
+
+					// Fetch estimated times
+					const estimatedTimesResponse = await API.getEstimatedTimes(
+						currentAuthToken,
+						ticketData
+					);
+					const ticketsWithEstimates = tickets.map((ticket, index) => ({
+						...ticket,
+						estClosure: estimatedTimesResponse[index].estimatedHours,
+					}));
+
+					setTickets(ticketsWithEstimates);
+				} else {
+					setTickets(tickets);
+				}
+			} catch (err) {
 				setErrors(err);
 				console.log(err);
-			});
-	}, []);
+			} finally {
+				// Loading done
+				setLoading(false);
+			}
+		};
+
+		fetchTicketsWithEstimates();
+	}, [authToken, tokenExpiration, user]);
 
 	useEffect(() => {
 		if (tokenExpiration) {
@@ -109,39 +146,6 @@ function Main() {
 	}, [tokenExpiration]);
 
 	/**
-	 * Refetches dynamic content (tickets and user info)
-	 *
-	 * @returns a Promise that resolves when the refetch is complete
-	 */
-	const refetchDynamicContent = async () => {
-		try {
-			// Load the list of tickets
-			const tickets = await API.fetchTickets();
-			setTickets(
-				tickets.map(
-					(ticket) =>
-						new Ticket(
-							ticket.ticket_id,
-							ticket.state,
-							ticket.category,
-							ticket.title,
-							ticket.initial_text,
-							ticket.submitted_at,
-							ticket.owner,
-							ticket.text_blocks,
-							ticket.owner_id
-						)
-				)
-			);
-			// Loading done
-			setLoading(false);
-		} catch (err) {
-			// Remove eventual 401 Unauthorized errors from the list, those are expected
-			setErrors(err.filter((e) => e !== 'Not authenticated'));
-		}
-	};
-
-	/**
 	 * Perform the login
 	 *
 	 * @param email email of the student
@@ -153,7 +157,9 @@ function Main() {
 			const fetchetUser = await API.login(email, password);
 			setUser(fetchetUser);
 			setErrors([]);
-			await refetchDynamicContent();
+			// Loading done
+			setLoading(false);
+			setnewTickets(true);
 			navigate('/');
 		} catch (err) {
 			setErrors(err);
@@ -173,6 +179,8 @@ function Main() {
 			setAuthToken(response.token);
 			setTokenExpiration(Date.now() + 60000); // Set expiration time to 60 seconds
 			setErrors([]);
+			// Loading done
+			setLoading(false);
 			return response.token;
 		} catch (err) {
 			setErrors(err);
@@ -188,14 +196,15 @@ function Main() {
 		API.logout()
 			.then(() => {
 				setUser(undefined);
-				// setSavedStudyPlan(undefined);
 				setAuthToken(undefined);
 				navigate('/');
+				setnewTickets(true);
 			})
 			.catch((err) => {
 				// Remove eventual 401 Unauthorized errors from the list
 				setErrors(err.filter((e) => e !== 'Not authenticated'));
-			});
+			})
+			.finally(() => setLoading(false));
 	};
 
 	const createTicket = (ticketData, onFinish) => {
@@ -203,9 +212,10 @@ function Main() {
 			.then(() => {
 				setErrors([]);
 				setSuccess('Ticket submitted successfully');
-				refetchDynamicContent().then(() => {
-					navigate('/');
-				});
+				// Loading done
+				setLoading(false);
+				setnewTickets(true);
+				navigate('/');
 			})
 			.catch((err) => setErrors(err))
 			.finally(() => onFinish?.());
@@ -224,12 +234,15 @@ function Main() {
 			.then(() => {
 				setErrors([]);
 				setSuccess(`Ticket state changed to ${newState}`);
-				refetchDynamicContent().then(() => {
-					navigate('/');
-				});
+				navigate('/');
+				setnewTickets(true);
 			})
 			.catch((err) => setErrors(err))
-			.finally(async () => onFinish?.());
+			.finally(async () => {
+				onFinish?.();
+				// Loading done
+				setLoading(false);
+			});
 	};
 
 	/**
@@ -245,12 +258,15 @@ function Main() {
 			.then(() => {
 				setErrors([]);
 				setSuccess(`Ticket category changed to ${newCategory}`);
-				refetchDynamicContent().then(() => {
-					navigate('/');
-				});
+				setnewTickets(true);
+				navigate('/');
 			})
 			.catch((err) => setErrors(err))
-			.finally(async () => onFinish?.());
+			.finally(async () => {
+				onFinish?.();
+				// Loading done
+				setLoading(false);
+			});
 	};
 
 	/**
@@ -267,12 +283,15 @@ function Main() {
 			.then(() => {
 				setErrors([]);
 				setSuccess('Your reply added successfully');
-				refetchDynamicContent().then(() => {
-					navigate('/');
-				});
+				setnewTickets(true);
+				navigate('/');
 			})
 			.catch((err) => setErrors(err))
-			.finally(async () => onFinish?.());
+			.finally(async () => {
+				onFinish?.();
+				// Loading done
+				setLoading(false);
+			});
 	};
 
 	/**
@@ -299,6 +318,8 @@ function Main() {
 			setErrors(err);
 		} finally {
 			onFinish?.();
+			// Loading done
+			setLoading(false);
 		}
 	};
 

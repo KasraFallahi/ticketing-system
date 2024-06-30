@@ -159,10 +159,6 @@ function AdminCategoryEdit({ ticket, waiting, setWaiting }) {
 		setShowSaveButton(newCategory !== initialCategory);
 	};
 
-	const handleSelectClick = (e) => {
-		e.stopPropagation();
-	};
-
 	const handleSaveCategory = () => {
 		setWaiting(true);
 		ticketActions.editTicketCategory(ticket.ticket_id, category, () => {
@@ -176,7 +172,6 @@ function AdminCategoryEdit({ ticket, waiting, setWaiting }) {
 			<Form.Select
 				value={category}
 				onChange={handleCategoryChange}
-				onClick={handleSelectClick}
 				disabled={waiting}
 				size="md"
 				style={{ marginRight: '10px' }} // Add margin for spacing
