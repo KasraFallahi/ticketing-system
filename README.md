@@ -197,7 +197,7 @@
 ## Screenshot
 
 ![Screenshot](./img/ticket_list.png)
-![Screenshot](./img/ticket_submission.png)
+![Screenshot](./img/submission_form.png)
 
 ## Users Credentials
 
