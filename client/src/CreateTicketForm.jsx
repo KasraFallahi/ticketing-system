@@ -7,7 +7,6 @@ import TicketConfirmation from './TicketConfirmation'; // Import the TicketConfi
 /**
  * The submit ticket page displayed on "/create-ticket"
  *
- * @param props.createTicketCbk callback to perform creating a ticket
  * @param props.errorAlertActive true when the error alert on the top is active and showing, false otherwise
  * @param props.ticketCreationActions object containing actions for ticket creation, including fetchEstimatedTime
  */
@@ -44,7 +43,6 @@ function CreateTicketForm(props) {
 
 		if (titleValid && categoryValid && descriptionValid) {
 			try {
-				// TODO fix fetching estimated time issue(related to JWT)
 				const estimateResponse =
 					await props.ticketCreationActions.fetchEstimatedTime(
 						formData.title,
@@ -75,7 +73,7 @@ function CreateTicketForm(props) {
 
 	const handleConfirm = () => {
 		setWaiting(true);
-		props.createTicketCbk(formData, () => setWaiting(false));
+		props.ticketCreationActions.createTicket(formData, () => setWaiting(false));
 	};
 
 	if (isConfirming) {

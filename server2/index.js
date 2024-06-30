@@ -31,11 +31,6 @@ app.use(
 	})
 );
 
-// app.use((req, res, next) => {
-// 	console.log('JWT Token:', req.headers.authorization); // Debug log
-// 	next();
-// });
-
 // To return a better object in case of errors
 app.use(function (err, req, res, next) {
 	console.log('err: ', err);
@@ -52,7 +47,7 @@ app.use(function (err, req, res, next) {
 
 // POST /api/estimate-time
 app.post('/api/estimate-time', (req, res) => {
-	const { title, category } = req.body;
+	const { title, category, is_admin } = req.body;
 
 	if (!title || !category) {
 		return res
@@ -68,15 +63,12 @@ app.post('/api/estimate-time', (req, res) => {
 	const randomHours = Math.floor(Math.random() * 240) + 1;
 	const estimatedHours = baseEstimate + randomHours;
 
-	// const isAdmin = req.auth && req.auth.role === 'admin';
-	// console.log(req.auth);
-
-	// if (isAdmin) {
-	// res.json({ estimatedHours });
-	// } else {
-	const estimatedDays = Math.round(estimatedHours / 24);
-	res.json({ estimatedDays });
-	// }
+	if (is_admin === 1) {
+		res.json({ estimatedHours });
+	} else {
+		const estimatedDays = Math.round(estimatedHours / 24);
+		res.json({ estimatedDays });
+	}
 });
 
 /*** Other express-related instructions ***/

@@ -115,11 +115,11 @@ const addTextBlock = async (ticketId, text) =>
  * @param category the category of the ticket
  * @returns estimated time to close the ticket
  */
-const getEstimatedTime = async (authToken, title, category) => {
+const getEstimatedTime = async (authToken, title, category, isAdmin) => {
 	return await APICall(
 		'estimate-time',
 		'POST',
-		JSON.stringify({ title, category }),
+		JSON.stringify({ title, category, is_admin: isAdmin }),
 		{
 			'Content-Type': 'application/json',
 			Authorization: `Bearer ${authToken}`,

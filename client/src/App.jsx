@@ -22,9 +22,9 @@ import {
 import { Col, Container, Row, Spinner } from 'react-bootstrap';
 import { API } from './API';
 import { Ticket } from './Ticket';
-import { TicketList } from './TicketList';
 import { LoginForm } from './LoginForm';
 import { CreateTicketForm } from './CreateTicketForm';
+import TicketList from './TicketList';
 
 function App() {
 	return (
@@ -60,7 +60,9 @@ function Main() {
 	 */
 	const [user, setUser] = useState(undefined);
 
-	const [authToken, setAuthToken] = useState(undefined);
+	const [authToken, setAuthToken] = useState(null);
+
+	const [tokenExpiration, setTokenExpiration] = useState(null);
 
 	/** The list of tickets */
 	const [tickets, setTickets] = useState([]);
@@ -92,52 +94,27 @@ function Main() {
 				setErrors(err);
 				console.log(err);
 			});
-
-		// Check if the user was already logged in
-		API.fetchCurrentUser()
-			.then((user) => {
-				setUser(user);
-				API.getAuthToken().then((res) => setAuthToken(res.token));
-			})
-			.catch((err) => {
-				// Remove eventual 401 Unauthorized errors from the list, those are expected
-				setErrors(err.filter((e) => e !== 'Not authenticated'));
-			});
 	}, []);
 
 	useEffect(() => {
-		if (user) {
-			// authentication has already taken place
-			API.getAuthToken()
-				.then((res) => {
-					setAuthToken(res.token);
-					setUser((user) => ({ ...user }));
-				})
-				.catch(() => {}); // This should not happen: token has just been requested
+		if (tokenExpiration) {
+			const timeoutId = setTimeout(() => {
+				setAuthToken(null);
+				setTokenExpiration(null);
+			}, 60000);
+
+			// Clean up the timeout if the component unmounts or the expiration time changes
+			return () => clearTimeout(timeoutId);
 		}
-		// Every time the study plan (as stored on the server) changes, ask the average success rate to server2
-		// Using an array reference here in this very particular case would be safe since the array is recreated
-		// because it is part of a state set after loading from server
-		// So, [savedStudyPlan?.courses] could be used as a dependency.
-
-		// To avoid problems, however, a value (string) derived from the array is used here.
-		// Note that .length would not work because the length of the old and the new one can be the same but with different content
-
-		// Alternatively, not recommended because you may risk forgetting to update it:
-		// use an additional state variable (flag), to be set every time courses changes
-	}, []);
+	}, [tokenExpiration]);
 
 	/**
-	 * Refetches dynamic content (number of students per course and study plan info)
+	 * Refetches dynamic content (tickets and user info)
 	 *
 	 * @returns a Promise that resolves when the refetch is complete
 	 */
 	const refetchDynamicContent = async () => {
 		try {
-			// Fetch user's info
-			const user = await API.fetchCurrentUser();
-			setUser(user);
-
 			// Load the list of tickets
 			const tickets = await API.fetchTickets();
 			setTickets(
@@ -173,10 +150,30 @@ function Main() {
 	 */
 	const login = async (email, password, onFinish) => {
 		try {
-			await API.login(email, password);
+			const fetchetUser = await API.login(email, password);
+			setUser(fetchetUser);
 			setErrors([]);
 			await refetchDynamicContent();
 			navigate('/');
+		} catch (err) {
+			setErrors(err);
+		} finally {
+			onFinish?.();
+		}
+	};
+
+	/**
+	 * Fetch the JWT token
+	 *
+	 * @param onFinish optional callback to be called on fetch token success or fail
+	 */
+	const fetchAuthToken = async (onFinish) => {
+		try {
+			const response = await API.getAuthToken();
+			setAuthToken(response.token);
+			setTokenExpiration(Date.now() + 60000); // Set expiration time to 60 seconds
+			setErrors([]);
+			return response.token;
 		} catch (err) {
 			setErrors(err);
 		} finally {
@@ -281,14 +278,23 @@ function Main() {
 	/**
 	 * Fetch the estimated time to close a ticket
 	 *
-	 * @param authToken authorization token
 	 * @param title the title of the ticket
 	 * @param category the category of the ticket
 	 * @param onFinish optional callback to be called on success or fail
 	 */
 	const fetchEstimatedTime = async (title, category, onFinish) => {
 		try {
-			return API.getEstimatedTime(authToken, title, category);
+			const currentAuthToken =
+				!authToken || Date.now() >= tokenExpiration
+					? await fetchAuthToken()
+					: authToken;
+
+			return await API.getEstimatedTime(
+				currentAuthToken,
+				title,
+				category,
+				user.is_admin
+			);
 		} catch (err) {
 			setErrors(err);
 		} finally {

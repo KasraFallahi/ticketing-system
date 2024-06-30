@@ -30,7 +30,7 @@ function TicketConfirmation(props) {
 									<strong>Description:</strong> {description}
 								</ListGroup.Item>
 								<ListGroup.Item>
-									<strong>Estimated Time:</strong>{' '}
+									<strong>Est. Closure Time:</strong>{' '}
 									{estimatedDays
 										? `${estimatedDays} days`
 										: `${estimatedHours} hours`}
