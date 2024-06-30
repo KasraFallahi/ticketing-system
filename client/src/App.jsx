@@ -16,14 +16,10 @@ import {
 	ticketsContext,
 	userContext,
 	ticketActionsContext,
-	checkStudyPlanModified,
 	waitingContext,
 	NotFoundPage,
 } from './Miscellaneous';
 import { Col, Container, Row, Spinner } from 'react-bootstrap';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-// import './App.css';
 import { API } from './API';
 import { Ticket } from './Ticket';
 import { TicketList } from './TicketList';
@@ -292,7 +288,6 @@ function Main() {
 	 */
 	const fetchEstimatedTime = async (title, category, onFinish) => {
 		try {
-			console.log('fetching estimated time. AUTH TOKEN:', authToken);
 			return API.getEstimatedTime(authToken, title, category);
 		} catch (err) {
 			setErrors(err);
