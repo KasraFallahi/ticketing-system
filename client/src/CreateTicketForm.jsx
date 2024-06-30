@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Form, Button, Container, Row, Col, Spinner } from 'react-bootstrap';
 import validator from 'validator';
+import { useNavigate } from 'react-router-dom';
 import TicketConfirmation from './TicketConfirmation'; // Import the TicketConfirmation component
 
 /**
@@ -25,6 +26,7 @@ function CreateTicketForm(props) {
 	const [waiting, setWaiting] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false); // State to manage form confirmation step
 	const [estimatedTime, setEstimatedTime] = useState(null); // State to store estimated time
+	const navigate = useNavigate(); // Hook to navigate back
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -144,21 +146,30 @@ function CreateTicketForm(props) {
 							</Form.Control.Feedback>
 						</Form.Group>
 
-						<Button variant="primary" type="submit" disabled={waiting}>
-							{waiting ? (
-								<>
-									<Spinner
-										as="span"
-										animation="border"
-										size="sm"
-										role="status"
-										aria-hidden="true"
-									/>{' '}
-								</>
-							) : (
-								'Submit'
-							)}
-						</Button>
+						<div className="d-flex justify-content-between">
+							<Button
+								variant="secondary"
+								onClick={() => navigate('/')}
+								disabled={waiting}
+							>
+								Back
+							</Button>
+							<Button variant="primary" type="submit" disabled={waiting}>
+								{waiting ? (
+									<>
+										<Spinner
+											as="span"
+											animation="border"
+											size="sm"
+											role="status"
+											aria-hidden="true"
+										/>{' '}
+									</>
+								) : (
+									'Submit'
+								)}
+							</Button>
+						</div>
 					</Form>
 				</Col>
 			</Row>
