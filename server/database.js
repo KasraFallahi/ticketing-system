@@ -136,6 +136,20 @@ function Database(dbname) {
 	};
 
 	/**
+	 * Update the category of a ticket
+	 *
+	 * @param ticketId ID of the ticket to update
+	 * @param category New category of the ticket
+	 *
+	 * @returns a Promise that resolves when the update is complete
+	 */
+	this.updateTicketCategory = async (ticketId, category) => {
+		const sql = 'UPDATE tickets SET category = ? WHERE ticket_id = ?';
+		const params = [category, ticketId];
+		await dbRunAsync(this.db, sql, params);
+	};
+
+	/**
 	 * Add a text block to a ticket
 	 *
 	 * @param ticketId ID of the ticket to add the text block to

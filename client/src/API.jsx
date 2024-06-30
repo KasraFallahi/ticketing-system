@@ -74,6 +74,23 @@ const editTicketState = async (ticketId, newState) =>
 	);
 
 /**
+ * Edit the category of an existing ticket
+ *
+ * @param ticketId ID of the ticket to edit
+ * @param newCategory New category of the ticket
+ *
+ * @returns updated ticket response
+ */
+const editTicketCategory = async (ticketId, newCategory) =>
+	await APICall(
+		`ticket/${ticketId}`,
+		'PATCH',
+		JSON.stringify({ category: newCategory }),
+		{ 'Content-Type': 'application/json' },
+		false
+	);
+
+/**
  * Add a text block to a ticket
  *
  * @param ticketId ID of the ticket to add the text block to
@@ -161,6 +178,7 @@ const API = {
 	getAuthToken,
 	createTicket,
 	editTicketState,
+	editTicketCategory,
 	addTextBlock,
 	getEstimatedTime,
 };

@@ -80,7 +80,7 @@ app.post(
 );
 
 /**
- * Edit the state of an existing ticket for the currently logged-in user
+ * Edit the state or category of an existing ticket for the currently logged-in user
  */
 app.patch('/api/ticket/:id', isLoggedIn, async (req, res) => {
 	// Check if validation is ok
@@ -91,13 +91,27 @@ app.patch('/api/ticket/:id', isLoggedIn, async (req, res) => {
 		return res.status(400).json({ errors: errList });
 	}
 
-	const { state } = req.body;
+	const { state, category } = req.body;
 	const validStates = ['Open', 'Closed'];
+	const validCategories = [
+		'inquiry',
+		'maintenance',
+		'new feature',
+		'administrative',
+		'payment',
+	];
 
 	// Validate the state
-	if (!validStates.includes(state)) {
+	if (state && !validStates.includes(state)) {
 		return res.status(400).json({
 			errors: ['Invalid state. State must be either "Open" or "Closed"'],
+		});
+	}
+
+	// Validate the category
+	if (category && !validCategories.includes(category)) {
+		return res.status(400).json({
+			errors: ['Invalid category.'],
 		});
 	}
 
@@ -105,7 +119,13 @@ app.patch('/api/ticket/:id', isLoggedIn, async (req, res) => {
 		const ticketId = req.params.id;
 
 		// Perform the actual update
-		await db.updateTicketState(ticketId, state);
+		if (state) {
+			await db.updateTicketState(ticketId, state);
+		}
+		if (category) {
+			await db.updateTicketCategory(ticketId, category);
+		}
+
 		res.end();
 	} catch (err) {
 		console.log(err);

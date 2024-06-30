@@ -4,16 +4,13 @@ import {
 	Badge,
 	Col,
 	Container,
-	OverlayTrigger,
 	Row,
-	Tooltip,
 	Button,
 	ListGroup,
 	Form,
 	Spinner,
 } from 'react-bootstrap';
 import {
-	checkCourseConstraints,
 	ticketsContext,
 	ticketActionsContext,
 	userContext,
@@ -81,158 +78,120 @@ function TicketList() {
 			</Container>
 			<Accordion alwaysOpen>
 				{tickets.map((ticket) => (
-					<Row key={ticket.ticket_id}>
-						<Col>
-							<Accordion.Item eventKey={ticket.ticket_id}>
-								<Accordion.Header>
-									<Container>
-										<Row>
-											<Col
-												className="text-start"
-												md={4}
-												style={{ paddingLeft: '1rem' }}
-											>
-												<em style={{ color: 'black', fontWeight: 'bold' }}>
-													{ticket.title}
-												</em>
-											</Col>
-											<Col md={2} className="text-center">
-												{ticket.category}
-											</Col>
-											<Col md={2} className="text-center">
-												{ticket.owner}
-											</Col>
-											<Col md={2} className="text-start">
-												<Badge
-													bg={ticket.state === 'Closed' ? 'success' : 'warning'}
-												>
-													{ticket.state}
-												</Badge>
-											</Col>
-											<Col md={2} className="text-start">
-												{ticket.submitted_at}
-											</Col>
-										</Row>
-									</Container>
-								</Accordion.Header>
-								<Accordion.Body>
-									<TicketItemDetails ticket={ticket} />
-								</Accordion.Body>
-							</Accordion.Item>
-						</Col>
-					</Row>
+					<TicketItem key={ticket.ticket_id} ticket={ticket} />
 				))}
 			</Accordion>
 		</>
 	);
 }
 
-/**
- * A single course in the CourseList
- *
- * @param props.course the Course object to render
- * @param props.accent display this course as accented
- * @param props.toggleAccent callback to toggle the accent for courses
- * @param props.first boolean, marks this item as first in the collection. Render the rounded top border
- * @param props.last boolean, marks this item as last in the collection. Render the bottom border
- */
-function TicketItem(props) {
-	const tickets = useContext(ticketsContext);
-	const student = useContext(userContext);
+function TicketItem({ ticket }) {
+	const user = useContext(userContext);
+	const ticketActions = useContext(ticketActionsContext);
+	const [category, setCategory] = useState(ticket.category);
+	const [initialCategory] = useState(ticket.category);
+	const [showSaveButton, setShowSaveButton] = useState(false);
+	const [waiting, setWaiting] = useState(false);
 
-	const itemStyle = {
-		borderTopRightRadius: '0px',
-		borderTopLeftRadius: '0px',
-		borderBottomRightRadius: '0px',
-		borderBottomLeftRadius: '0px',
-		borderBottomWidth: '0px',
+	const handleCategoryChange = (e) => {
+		const newCategory = e.target.value;
+		setCategory(newCategory);
+		setShowSaveButton(newCategory !== initialCategory);
 	};
 
-	if (props.first) {
-		delete itemStyle.borderTopRightRadius;
-		delete itemStyle.borderTopLeftRadius;
-	} else if (props.last) {
-		delete itemStyle.borderBottomWidth;
-		delete itemStyle.borderBottomRightRadius;
-		delete itemStyle.borderBottomLeftRadius;
-	}
+	const handleSelectClick = (e) => {
+		e.stopPropagation();
+	};
 
-	const constraints =
-		student?.studyPlan &&
-		checkCourseConstraints(
-			props.course,
-			student.studyPlan,
-			tickets,
-			student.fullTime
-		);
-	const constrOk = constraints !== undefined ? constraints.result : true;
+	const handleSaveCategory = () => {
+		setWaiting(true);
+		ticketActions.editTicketCategory(ticket.ticket_id, category, () => {
+			setWaiting(false);
+			setShowSaveButton(false);
+		});
+	};
 
 	return (
-		<Row>
+		<Row key={ticket.ticket_id} className="align-items-center">
 			<Col>
-				<Accordion.Item
-					eventKey={props.ticket.ticket_id}
-					className={
-						(props.accent ? 'accent' : '') + (!constrOk ? ' disabled' : '')
-					}
-					style={itemStyle}
-				>
+				<Accordion.Item eventKey={ticket.ticket_id}>
 					<Accordion.Header>
-						<Container style={{ paddingLeft: '0.5rem' }}>
-							<Row>
-								<Col md="auto" className="align-self-center">
-									<Badge bg="secondary">
-										<tt>{props.ticket.ticket_id}</tt>
-									</Badge>
-								</Col>
-								<Col md="auto" style={{ borderLeft: '1px solid grey' }}>
-									{constrOk ? (
-										props.ticket.title
-									) : (
-										<em style={{ color: 'grey' }}>{props.ticket.title}</em>
-									)}{' '}
-									<Badge bg="light" pill style={{ color: 'black' }}>
-										{/* CFU: {props.course.cfu} */}
-										CFU: CFU
-									</Badge>
-								</Col>
+						<Container>
+							<Row className="align-items-center">
 								<Col
-									className="text-end align-self-center"
-									style={{ marginRight: '1rem' }}
+									className="text-start"
+									md={4}
+									style={{ paddingLeft: '1rem' }}
 								>
-									<Badge>
-										badge
-										{/* {props.course.numStudents +
-											(props.course.maxStudents
-												? '/' + props.course.maxStudents
-												: '')}{' '} */}
-										<i className="bi bi-person-fill" />
+									<em style={{ color: 'black', fontWeight: 'bold' }}>
+										{ticket.title}
+									</em>
+								</Col>
+								<Col md={2} className="text-center d-flex align-items-center">
+									{user && user.is_admin === 1 ? (
+										<>
+											<Form.Select
+												value={category}
+												onChange={handleCategoryChange}
+												onClick={handleSelectClick}
+												disabled={waiting}
+											>
+												<option value="inquiry">Inquiry</option>
+												<option value="maintenance">Maintenance</option>
+												<option value="new feature">New Feature</option>
+												<option value="administrative">Administrative</option>
+												<option value="payment">Payment</option>
+											</Form.Select>
+											{showSaveButton && (
+												<span
+													onClick={(e) => {
+														e.stopPropagation();
+														handleSaveCategory();
+													}}
+													disabled={waiting}
+													className="ms-2 btn btn-success btn-sm"
+													role="button"
+													style={{
+														cursor: waiting ? 'not-allowed' : 'pointer',
+													}}
+												>
+													{waiting ? (
+														<Spinner
+															as="span"
+															animation="border"
+															size="sm"
+															role="status"
+															aria-hidden="true"
+														/>
+													) : (
+														'Save'
+													)}
+												</span>
+											)}
+										</>
+									) : (
+										ticket.category
+									)}
+								</Col>
+								<Col md={2} className="text-center">
+									{ticket.owner}
+								</Col>
+								<Col md={2} className="text-start">
+									<Badge bg={ticket.state === 'Closed' ? 'success' : 'warning'}>
+										{ticket.state}
 									</Badge>
+								</Col>
+								<Col md={2} className="text-start">
+									{ticket.submitted_at}
 								</Col>
 							</Row>
 						</Container>
 					</Accordion.Header>
 					<Accordion.Body>
-						{/* <CourseItemDetails
-							course={props.course}
-							toggleAccent={props.toggleAccent}
-							disabled={!constrOk}
-							reason={constraints?.reason}
-						/> */}
+						<TicketItemDetails ticket={ticket} />
 					</Accordion.Body>
 				</Accordion.Item>
 			</Col>
-			{student?.studyPlan ? (
-				<Col
-					md="auto"
-					className="align-self-center"
-					style={{ paddingLeft: '0px' }}
-				>
-					<ContextualButton constraints={constraints} course={props.course} />
-				</Col>
-			) : (
-				false
-			)}
 		</Row>
 	);
 }
@@ -420,31 +379,6 @@ function TicketItemDetails(props) {
 				</Form>
 			)}
 		</Container>
-	);
-}
-
-/**
- * Displays the course code of a provided course that shows the full name when hovered
- *
- * @param props.course the course of which to show the code
- * @param props.color color of the displayed code
- * @param props.toggleAccent callback to toggle the accent for the corresponding row of the course list
- */
-function CourseCodeHoverable(props) {
-	return (
-		<OverlayTrigger
-			placement="top"
-			overlay={
-				<Tooltip id={'tooltip-' + props.course.code}>
-					{props.course.name}
-				</Tooltip>
-			}
-			onToggle={props.toggleAccent}
-		>
-			<strong style={props.color ? { color: props.color } : {}}>
-				<tt>{props.course.code}</tt>
-			</strong>
-		</OverlayTrigger>
 	);
 }
 

@@ -240,6 +240,27 @@ function Main() {
 	};
 
 	/**
+	 * Edit the category of an existing ticket
+	 *
+	 * @param ticketId ID of the ticket to edit
+	 * @param newCategory New category of the ticket
+	 * @param onFinish optional callback to be called on edit success or fail
+	 */
+	const editTicketCategory = (ticketId, newCategory, onFinish) => {
+		setLoading(true);
+		API.editTicketCategory(ticketId, newCategory)
+			.then(() => {
+				setErrors([]);
+				setSuccess(`Ticket category changed to ${newCategory}`);
+				refetchDynamicContent().then(() => {
+					navigate('/');
+				});
+			})
+			.catch((err) => setErrors(err))
+			.finally(async () => onFinish?.());
+	};
+
+	/**
 	 * Add a text block to a ticket
 	 *
 	 * @param ticketId ID of the ticket to add the text block to
@@ -280,7 +301,7 @@ function Main() {
 		}
 	};
 
-	const ticketActions = { editTicketState, addTextBlock };
+	const ticketActions = { editTicketState, editTicketCategory, addTextBlock };
 	const ticketCreationActions = { createTicket, fetchEstimatedTime };
 
 	return (
