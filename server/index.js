@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-const Database = require('./db/db');
+const Database = require('./database');
 const morgan = require('morgan'); // logging middleware
 const cors = require('cors');
 const { body, validationResult } = require('express-validator');
@@ -16,7 +16,7 @@ const expireTime = 60; //seconds
 // init express
 const app = new express();
 const port = 3001;
-const db = new Database('./db/ticket.db');
+const db = new Database('./ticket.db');
 
 // set up middlewares
 app.use(morgan('dev'));
