@@ -22,8 +22,8 @@ import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 
 /**
- * List of all the courses.
- * Receives the list of all courses from a Context
+ * List of all the tickets.
+ * Receives the list of all tickets from a Context
  */
 function TicketList() {
 	const user = useContext(userContext);
@@ -62,22 +62,19 @@ function TicketList() {
 			>
 				{/* Table Header */}
 				<Row>
-					<Col md={1} className="text-center">
-						ID
-					</Col>
-					<Col className="text-center" md={4}>
+					<Col className="text-start" md={4} style={{ paddingLeft: '2.5rem' }}>
 						Title
 					</Col>
-					<Col md={1} className="text-center">
-						State
-					</Col>
-					<Col md={1} className="text-center">
-						Owner
-					</Col>
-					<Col md={1} className="text-center">
+					<Col md={2} className="text-center">
 						Category
 					</Col>
-					<Col md={3} className="text-center">
+					<Col md={2} className="text-center">
+						Owner
+					</Col>
+					<Col md={2} className="text-start">
+						State
+					</Col>
+					<Col md={2} className="text-start">
 						Date Created
 					</Col>
 				</Row>
@@ -90,28 +87,29 @@ function TicketList() {
 								<Accordion.Header>
 									<Container>
 										<Row>
-											<Col md={1}>
-												<Badge bg="secondary">
-													<tt>#{ticket.ticket_id}</tt>
-												</Badge>
+											<Col
+												className="text-start"
+												md={4}
+												style={{ paddingLeft: '1rem' }}
+											>
+												<em style={{ color: 'black', fontWeight: 'bold' }}>
+													{ticket.title}
+												</em>
 											</Col>
-											<Col className="text-center" md={4}>
-												{<em style={{ color: 'grey' }}>{ticket.title}</em>}{' '}
+											<Col md={2} className="text-center">
+												{ticket.category}
 											</Col>
-											<Col md={1} className="text-center">
+											<Col md={2} className="text-center">
+												{ticket.owner}
+											</Col>
+											<Col md={2} className="text-start">
 												<Badge
 													bg={ticket.state === 'Closed' ? 'success' : 'warning'}
 												>
 													{ticket.state}
 												</Badge>
 											</Col>
-											<Col md={1} className="text-center">
-												{ticket.owner}
-											</Col>
-											<Col md={1} className="text-center">
-												{ticket.category}
-											</Col>
-											<Col md={3} className="text-center">
+											<Col md={2} className="text-start">
 												{ticket.submitted_at}
 											</Col>
 										</Row>
@@ -127,68 +125,6 @@ function TicketList() {
 			</Accordion>
 		</>
 	);
-	// ------------------- 1st version -------------------
-	// return (
-	// 	<Container>
-	// 		<Row className="my-4">
-	// 			<Table striped hover>
-	// 				<thead>
-	// 					<tr>
-	// 						{headers.map((header, index) => (
-	// 							<th key={index}>{header}</th>
-	// 						))}
-	// 					</tr>
-	// 				</thead>
-	// 				<tbody>
-	// 					{tickets.map((ticket) => (
-	// 						<tr key={ticket.ticket_id}>
-	// 							<td>{ticket.ticket_id}</td>
-	// 							<td>{ticket.submitted_at}</td>
-	// 							<td>{ticket.title}</td>
-	// 							<td>{ticket.owner}</td>
-	// 							<td>{ticket.category}</td>
-	// 							<td>
-	// 								<Badge bg={ticket.state === 'Closed' ? 'success' : 'warning'}>
-	// 									{ticket.state}
-	// 								</Badge>
-	// 							</td>
-	// 							{/* <td>{ticket.estTime}</td> */}
-	// 							<td>1 day</td>
-	// 						</tr>
-	// 					))}
-	// 				</tbody>
-	// 			</Table>
-	// 		</Row>
-	// 	</Container>
-	// );
-
-	// return (
-	// 	<Table striped hover>
-	// 		<thead>
-	// 			<tr>
-	// 				{headers.map((header) => (
-	// 					<th key={header}>{header}</th>
-	// 				))}
-	// 			</tr>
-	// 		</thead>
-	// 		<tbody>
-	// 			<Accordion alwaysOpen>
-	// 				<tr>
-	// 					{tickets.map((c, i, a) => (
-	// 						<TicketItem
-	// 							ticket={c}
-	// 							toggleAccent={toggleAccent}
-	// 							accent={accentList.includes(c.code)}
-	// 							key={c.ticket_id}
-	// 							first={i === 0}
-	// 							last={i === a.length - 1}
-	// 						/>
-	// 					))}
-	// 				</tr>
-	// 			</Accordion>
-	// 		</tbody>
-	// 	</Table>
-	// );
 }
 
 /**
