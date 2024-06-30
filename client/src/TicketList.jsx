@@ -9,6 +9,7 @@ import {
 	ListGroup,
 	Form,
 	Spinner,
+	Card,
 } from 'react-bootstrap';
 import {
 	ticketsContext,
@@ -76,15 +77,29 @@ function TicketList() {
 					</Col>
 				</Row>
 			</Container>
-			<Accordion alwaysOpen>
-				{tickets.map((ticket) => (
-					<TicketItem key={ticket.ticket_id} ticket={ticket} />
-				))}
-			</Accordion>
+			{user ? (
+				<Accordion alwaysOpen>
+					{tickets.map((ticket) => (
+						<TicketItem key={ticket.ticket_id} ticket={ticket} />
+					))}
+				</Accordion>
+			) : (
+				<Container>
+					{tickets.map((ticket) => (
+						<SimpleTicketItem key={ticket.ticket_id} ticket={ticket} />
+					))}
+				</Container>
+			)}
 		</>
 	);
 }
 
+/**
+ * TicketItem component.
+ * Displays a single ticket with functionalities for editing by logged-in users.
+ *
+ * @param {Object} ticket The ticket object to display.
+ */
 function TicketItem({ ticket }) {
 	const user = useContext(userContext);
 	const ticketActions = useContext(ticketActionsContext);
@@ -193,6 +208,44 @@ function TicketItem({ ticket }) {
 				</Accordion.Item>
 			</Col>
 		</Row>
+	);
+}
+
+/**
+ * SimpleTicketItem component.
+ * Displays a single ticket as a card without any user-related functionalities.
+ *
+ * @param {Object} ticket The ticket object to display.
+ */
+function SimpleTicketItem({ ticket }) {
+	return (
+		<Card className="mb-3">
+			<Card.Body>
+				<Container>
+					<Row className="align-items-center">
+						<Col md={4} className="text-start" style={{ paddingLeft: '1rem' }}>
+							<em style={{ color: 'black', fontWeight: 'bold' }}>
+								{ticket.title}
+							</em>
+						</Col>
+						<Col md={2} className="text-start">
+							{ticket.category}
+						</Col>
+						<Col md={2} className="text-center">
+							{ticket.owner}
+						</Col>
+						<Col md={2} className="text-start">
+							<Badge bg={ticket.state === 'Closed' ? 'success' : 'warning'}>
+								{ticket.state}
+							</Badge>
+						</Col>
+						<Col md={2} className="text-start">
+							{ticket.submitted_at}
+						</Col>
+					</Row>
+				</Container>
+			</Card.Body>
+		</Card>
 	);
 }
 
