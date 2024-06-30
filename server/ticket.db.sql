@@ -30,11 +30,11 @@ CREATE TABLE IF NOT EXISTS "text_blocks" (
   FOREIGN KEY (author) REFERENCES users(user_id)
 );
 
-INSERT INTO users ("email", "name", "hash", "salt")
+INSERT INTO users ("email", "is_admin", "name", "hash", "salt")
 VALUES
-  ('user1@example.com', 'John Doe', 'hashed_password1', 'random_salt1'),
-  ('user2@example.com', 'Jane Smith', 'hashed_password2', 'random_salt2'),
-  ('user3@example.com', 'Alice Johnson', 'hashed_password3', 'random_salt3');
+  ('user1@example.com', 0, 'John Doe', 'hashed_password1', 'random_salt1'),
+  ('user2@example.com', 0, 'Jane Smith', 'hashed_password2', 'random_salt2'),
+  ('user3@example.com', 0, 'Alice Johnson', 'hashed_password3', 'random_salt3');
 
 INSERT INTO tickets ("owner", "category", "owner", "title", "initial_text")
 VALUES

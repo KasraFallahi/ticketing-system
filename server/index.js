@@ -105,7 +105,7 @@ app.patch('/api/ticket/:id', isLoggedIn, async (req, res) => {
 		const ticketId = req.params.id;
 
 		// Perform the actual update
-		await db.updateTicketState(ticketId, state, req.user.id);
+		await db.updateTicketState(ticketId, state);
 		res.end();
 	} catch (err) {
 		console.log(err);
@@ -170,6 +170,7 @@ app.post(
 					else {
 						res.json({
 							id: user.id,
+							is_admin: user.is_admin,
 							email: user.username,
 							name: user.name,
 						});
@@ -196,6 +197,7 @@ app.get('/api/session/current', isLoggedIn, async (req, res) => {
 		id: req.user.id,
 		email: req.user.username,
 		name: req.user.name,
+		is_admin: req.user.is_admin,
 	});
 });
 

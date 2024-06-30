@@ -125,13 +125,13 @@ function Database(dbname) {
 	 *
 	 * @returns a Promise that resolves to nothing on success
 	 */
-	this.updateTicketState = async (ticketId, newState, userId) => {
+	this.updateTicketState = async (ticketId, newState) => {
 		const sql = `
 		UPDATE tickets
 		SET state = ?
-		WHERE ticket_id = ? AND owner = ?
+		WHERE ticket_id = ?
 	`;
-		const params = [newState, ticketId, userId];
+		const params = [newState, ticketId];
 		await dbRunAsync(this.db, sql, params);
 	};
 
@@ -198,7 +198,7 @@ function Database(dbname) {
 	this.getUser = async (id) => {
 		const user = await dbGetAsync(
 			this.db,
-			'SELECT email as username, name FROM users WHERE user_id = ?',
+			'SELECT email as username, name, is_admin FROM users WHERE user_id = ?',
 			[id]
 		);
 

@@ -15,10 +15,8 @@ import {
 import {
 	checkCourseConstraints,
 	ticketsContext,
-	SmallRoundButton,
 	ticketActionsContext,
 	userContext,
-	waitingContext,
 } from './Miscellaneous';
 import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
@@ -304,13 +302,10 @@ function TicketItem(props) {
 }
 
 /**
- * Details for the CourseItem.
- * This is shown when the corresponding course's row is clicked
+ * Details for the TicketItem.
+ * This is shown when the corresponding ticket's row is clicked
  *
- * @param props.course the course the details of which are to be rendered
- * @param props.toggleAccent callback to be passed to CourseCodeHoverable
- * @param props.disabled boolean, used when the course is incompatible with the current study plan
- * @param props.reason reason why this course is disabled (as returned by "checkCourseConstraints")
+ * @param props.ticket the ticket the details of which are to be rendered
  */
 function TicketItemDetails(props) {
 	const user = useContext(userContext);
@@ -348,10 +343,60 @@ function TicketItemDetails(props) {
 		}
 	};
 
+	const handleReopenTicket = () => {
+		if (window.confirm('Are you sure you want to re-open this ticket?')) {
+			setWaiting(true);
+			ticketActions.editTicketState(props.ticket.ticket_id, 'Open', () =>
+				setWaiting(false)
+			);
+		}
+	};
+
 	return (
 		<Container>
 			<div className="d-flex justify-content-between align-items-center">
 				<p className="mb-0">{props.ticket.initial_text}</p>
+				{user &&
+					user.is_admin === 1 &&
+					(props.ticket.state === 'Open' ? (
+						<Button
+							variant="danger"
+							onClick={handleCloseTicket}
+							disabled={waiting}
+						>
+							{waiting ? (
+								<Spinner
+									as="span"
+									animation="border"
+									size="sm"
+									role="status"
+									aria-hidden="true"
+								/>
+							) : (
+								<i className="bi bi-x-circle me-2" />
+							)}
+							Close Ticket
+						</Button>
+					) : (
+						<Button
+							variant="primary"
+							onClick={handleReopenTicket}
+							disabled={waiting}
+						>
+							{waiting ? (
+								<Spinner
+									as="span"
+									animation="border"
+									size="sm"
+									role="status"
+									aria-hidden="true"
+								/>
+							) : (
+								<i className="bi bi-arrow-clockwise me-2" />
+							)}
+							Re-open Ticket
+						</Button>
+					))}
 				{props.ticket.state === 'Open' &&
 					user &&
 					user.id === props.ticket.owner_id && (
