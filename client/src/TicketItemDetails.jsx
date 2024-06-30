@@ -246,49 +246,57 @@ function TicketActions({ user, ticket, waiting, setWaiting }) {
 	return (
 		<div className="d-flex justify-content-between align-items-center">
 			<p className="mb-0">{ticket.initial_text}</p>
-			{user &&
-				user.is_admin === 1 &&
-				(ticket.state === 'Open' ? (
-					<Button
-						variant="danger"
-						onClick={handleCloseTicket}
-						disabled={waiting}
-					>
-						{waiting ? (
-							<Spinner
-								as="span"
-								animation="border"
-								size="sm"
-								role="status"
-								aria-hidden="true"
-							/>
-						) : (
-							<i className="bi bi-x-circle me-2" />
-						)}
-						Close Ticket
-					</Button>
-				) : (
-					<Button
-						variant="primary"
-						onClick={handleReopenTicket}
-						disabled={waiting}
-					>
-						{waiting ? (
-							<Spinner
-								as="span"
-								animation="border"
-								size="sm"
-								role="status"
-								aria-hidden="true"
-							/>
-						) : (
-							<i className="bi bi-arrow-clockwise me-2" />
-						)}
-						Re-open Ticket
-					</Button>
-				))}
-			{ticket.state === 'Open' && user && user.id === ticket.owner_id && (
-				<Button variant="danger" onClick={handleCloseTicket} disabled={waiting}>
+			{user && ticket.state === 'Open' && (
+				<>
+					{user.is_admin === 1 ? (
+						<Button
+							variant="danger"
+							onClick={handleCloseTicket}
+							disabled={waiting}
+						>
+							{waiting ? (
+								<Spinner
+									as="span"
+									animation="border"
+									size="sm"
+									role="status"
+									aria-hidden="true"
+								/>
+							) : (
+								<i className="bi bi-x-circle me-2" />
+							)}
+							Close Ticket
+						</Button>
+					) : (
+						user.id === ticket.owner_id && (
+							<Button
+								variant="danger"
+								onClick={handleCloseTicket}
+								disabled={waiting}
+							>
+								{waiting ? (
+									<Spinner
+										as="span"
+										animation="border"
+										size="sm"
+										role="status"
+										aria-hidden="true"
+									/>
+								) : (
+									<i className="bi bi-x-circle me-2" />
+								)}
+								Close Ticket
+							</Button>
+						)
+					)}
+				</>
+			)}
+			{user && user.is_admin === 1 && ticket.state !== 'Open' && (
+				<Button
+					variant="primary"
+					onClick={handleReopenTicket}
+					disabled={waiting}
+				>
 					{waiting ? (
 						<Spinner
 							as="span"
@@ -298,9 +306,9 @@ function TicketActions({ user, ticket, waiting, setWaiting }) {
 							aria-hidden="true"
 						/>
 					) : (
-						<i className="bi bi-x-circle me-2" />
+						<i className="bi bi-arrow-clockwise me-2" />
 					)}
-					Close Ticket
+					Re-open Ticket
 				</Button>
 			)}
 		</div>
