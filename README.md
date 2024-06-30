@@ -163,9 +163,15 @@
 
 ## Screenshot
 
-![Screenshot](./img/screenshot.png)
+![Screenshot](./img/ticket_list.png)
+![Screenshot](./img/ticket_submission.png)
 
 ## Users Credentials
 
-- username, password (plus any other requested info which depends on the text)
-- username, password (plus any other requested info which depends on the text)
+| email   | password | name   | is_admin |
+| ------- | -------- | ------ | -------- |
+| u1@p.it | password | User1  | 0        |
+| u2@p.it | password | User2  | 0        |
+| u3@p.it | password | User3  | 0        |
+| a1@p.it | password | Admin1 | 1        |
+| a2@p.it | password | Admin2 | 1        |
