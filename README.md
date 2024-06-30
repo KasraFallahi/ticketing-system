@@ -124,6 +124,7 @@
 ## API Server2
 
 - **POST `/api/estimate-time`**: Returns the estimated time to close a ticket based on its title and category.
+
   - **Request Headers**: JWT token
   - **Request**: JSON object with the ticket title and category
     ```
@@ -147,19 +148,51 @@
       ```
   - Codes: `200 OK`, `401 Unauthorized`, `400 Bad Request` (invalid request body).
 
+- **POST `/api/estimate-times`**: Returns the estimated time to close multiple tickets based on their titles and categories.
+- **Request Headers**: JWT token
+- **Request**: JSON object with an array of tickets, each containing the title and category
+  ```
+  {
+    "tickets": [
+      { "title": "Issue with login", "category": "Technical Issue" },
+      { "title": "Feature request: Dark mode", "category": "New Feature" }
+    ]
+  }
+  ```
+- **Response body**: JSON array with the estimated time in hours for each ticket
+  ```
+  [
+    { "estimatedHours": 50 },
+    { "estimatedHours": 120 }
+  ]
+  ```
+- Codes: `200 OK`, `401 Unauthorized`, `400 Bad Request` (invalid request body).
+
 ## Database Tables
 
-- Table `users` - contains xx yy zz
-- Table `something` - contains ww qq ss
-- ...
+- Table `users`: _user_id_, _is_admin_, _email_, _name_, _hash_, _salt_.  
+  _is_admin_: 0 for regular users, 1 for admin users.
+- Table `tickets`: _ticket_id_, _owner_, _state_, _category_, _title_, _initial_text_, _submitted_at_.  
+  _state_: Default is 'Open'.  
+  _owner_: References the `user_id` in the `users` table.
+
+- Table `text_blocks`: _text_block_id_, _ticket_id_, _text_, _author_, _submitted_at_.  
+  _ticket_id_: References the `ticket_id` in the `tickets` table.  
+  _author_: References the `user_id` in the `users` table.
 
 ## Main React Components
 
-- `ListOfSomething` (in `List.js`): component purpose and main functionality
-- `GreatButton` (in `GreatButton.js`): component purpose and main functionality
-- ...
-
-(only _main_ components, minor ones may be skipped)
+- `Main` (in `App.js`): technically a component, takes the role of App and is rendered inside a Router to be able to use the useNavigate hook. This maintains most of the state of the app.
+- `HomePage` (in `App.js`): proper home page, contains the list of tickets and, when a user is logged in, their relevant actions as well. This component injects all the Contexts used throughout the app with their respective values.
+- `TicketList` (in `TicketList.js`): the list of all tickets. It conditionally renders tickets in an accordion for logged-in users or as a card list for guests.
+- `TicketItem` (in `TicketList.js`): a single ticket in the TicketList. Displays ticket information and, when expanded, shows ticket details and actions for logged-in users.
+- `TicketItemDetails` (in `TicketItemDetails.js`): detailed view of a ticket, including actions to add replies and change ticket state. It also includes the category editing functionality for admin users.
+- `GeneralTicketItem` (in `TicketList.js`): a single ticket displayed as a card for guests without user-related functionalities.
+- `TextBlockList` (in `TicketItemDetails.js`): renders the list of text blocks (replies) for a ticket.
+- `AdminCategoryEdit` (in `TicketItemDetails.js`): allows admin users to edit the category of a ticket.
+- `TicketActions` (in `TicketItemDetails.js`): renders ticket actions like close and reopen for logged-in users.
+- `LoginForm` (in `LoginForm.js`): the login form that users can use to log into the app. This is responsible for the client-side validation of the login credentials (valid email and non-empty password).
+- `CreateTicketForm` (in `CreateTicketForm.js`): the form used to create a new ticket. This includes fields for the ticket's title, category, and description, and handles form validation and submission.
 
 ## Screenshot
 
