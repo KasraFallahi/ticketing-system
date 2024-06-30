@@ -4,11 +4,13 @@ import { Container, Row, Col, Button, Card, ListGroup } from 'react-bootstrap';
  * The confirmation page for ticket submission
  *
  * @param props.ticketData the data of the ticket to confirm
+ * @param props.estimatedTime the estimated time to close the ticket
  * @param props.onDiscard callback to discard the submission and go back
  * @param props.onConfirm callback to confirm the submission
  */
 function TicketConfirmation(props) {
 	const { title, category, description } = props.ticketData;
+	const { estimatedHours, estimatedDays } = props.estimatedTime;
 
 	return (
 		<Container style={{ marginTop: '6rem' }}>
@@ -26,6 +28,12 @@ function TicketConfirmation(props) {
 								</ListGroup.Item>
 								<ListGroup.Item>
 									<strong>Description:</strong> {description}
+								</ListGroup.Item>
+								<ListGroup.Item>
+									<strong>Estimated Time:</strong>{' '}
+									{estimatedDays
+										? `${estimatedDays} days`
+										: `${estimatedHours} hours`}
 								</ListGroup.Item>
 							</ListGroup>
 						</Card.Body>

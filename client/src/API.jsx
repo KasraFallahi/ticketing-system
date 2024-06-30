@@ -1,7 +1,10 @@
 const SERVER_HOST = 'http://localhost';
+const SERVER2_HOST = 'http://localhost';
 const SERVER_PORT = 3001;
+const SERVER2_PORT = 3002;
 
 const SERVER_BASE = `${SERVER_HOST}:${SERVER_PORT}/api/`;
+const SERVER2_BASE = `${SERVER2_HOST}:${SERVER2_PORT}/api/`;
 
 /**
  * Generic API call
@@ -37,7 +40,8 @@ const APICall = async (
 				return await response.json();
 			}
 		} else errors = (await response.json()).errors;
-	} catch {
+	} catch (e) {
+		console.log(e);
 		const err = ['Failed to contact the server'];
 		throw err;
 	}
@@ -85,6 +89,28 @@ const addTextBlock = async (ticketId, text) =>
 		{ 'Content-Type': 'application/json' },
 		false
 	);
+
+/**
+ * Fetches the estimated time to close a ticket from the second server, using an authorization token
+ *
+ * @param authToken authorization token
+ * @param title the title of the ticket
+ * @param category the category of the ticket
+ * @returns estimated time to close the ticket
+ */
+const getEstimatedTime = async (authToken, title, category) => {
+	return await APICall(
+		'estimate-time',
+		'POST',
+		JSON.stringify({ title, category }),
+		{
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${authToken}`,
+		},
+		true,
+		SERVER2_BASE
+	);
+};
 
 /**
  * Attempts to login the student
@@ -136,6 +162,7 @@ const API = {
 	createTicket,
 	editTicketState,
 	addTextBlock,
+	getEstimatedTime,
 };
 
 export { API };

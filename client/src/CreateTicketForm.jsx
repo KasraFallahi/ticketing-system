@@ -8,6 +8,7 @@ import TicketConfirmation from './TicketConfirmation'; // Import the TicketConfi
  *
  * @param props.createTicketCbk callback to perform creating a ticket
  * @param props.errorAlertActive true when the error alert on the top is active and showing, false otherwise
+ * @param props.ticketCreationActions object containing actions for ticket creation, including fetchEstimatedTime
  */
 function CreateTicketForm(props) {
 	const [formData, setFormData] = useState({
@@ -23,6 +24,7 @@ function CreateTicketForm(props) {
 	});
 	const [waiting, setWaiting] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false); // State to manage form confirmation step
+	const [estimatedTime, setEstimatedTime] = useState(null); // State to store estimated time
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -30,7 +32,7 @@ function CreateTicketForm(props) {
 		setFormValid({ ...formValid, [name]: true }); // Reset validation state on change
 	};
 
-	const handleSubmit = (event) => {
+	const handleSubmit = async (event) => {
 		event.preventDefault();
 
 		// Validate form
@@ -39,7 +41,23 @@ function CreateTicketForm(props) {
 		const descriptionValid = !validator.isEmpty(formData.description);
 
 		if (titleValid && categoryValid && descriptionValid) {
-			setIsConfirming(true); // Switch to confirmation step
+			try {
+				// TODO fix fetching estimated time issue(related to JWT)
+				const estimateResponse =
+					await props.ticketCreationActions.fetchEstimatedTime(
+						formData.title,
+						formData.category
+					);
+				setEstimatedTime(estimateResponse); // Store estimated time
+				setIsConfirming(true); // Switch to confirmation step
+			} catch (err) {
+				console.error('Failed to fetch estimated time:', err);
+				setFormValid({
+					title: titleValid,
+					category: categoryValid,
+					description: descriptionValid,
+				});
+			}
 		} else {
 			setFormValid({
 				title: titleValid,
@@ -62,6 +80,7 @@ function CreateTicketForm(props) {
 		return (
 			<TicketConfirmation
 				ticketData={formData}
+				estimatedTime={estimatedTime}
 				onDiscard={handleDiscard}
 				onConfirm={handleConfirm}
 			/>

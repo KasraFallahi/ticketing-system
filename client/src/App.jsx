@@ -261,7 +261,27 @@ function Main() {
 			.finally(async () => onFinish?.());
 	};
 
+	/**
+	 * Fetch the estimated time to close a ticket
+	 *
+	 * @param authToken authorization token
+	 * @param title the title of the ticket
+	 * @param category the category of the ticket
+	 * @param onFinish optional callback to be called on success or fail
+	 */
+	const fetchEstimatedTime = async (title, category, onFinish) => {
+		try {
+			console.log('fetching estimated time. AUTH TOKEN:', authToken);
+			return API.getEstimatedTime(authToken, title, category);
+		} catch (err) {
+			setErrors(err);
+		} finally {
+			onFinish?.();
+		}
+	};
+
 	const ticketActions = { editTicketState, addTextBlock };
+	const ticketCreationActions = { createTicket, fetchEstimatedTime };
 
 	return (
 		<Routes>
@@ -314,7 +334,7 @@ function Main() {
 							<LoadingSpinner />
 						) : (
 							<CreateTicketForm
-								createTicketCbk={createTicket}
+								ticketCreationActions={ticketCreationActions}
 								errorAlertActive={errors.length > 0}
 							/>
 						)
