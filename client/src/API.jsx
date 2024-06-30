@@ -130,6 +130,27 @@ const getEstimatedTime = async (authToken, title, category, isAdmin) => {
 };
 
 /**
+ * Fetches the estimated times to close tickets from the second server, using an authorization token
+ *
+ * @param authToken authorization token
+ * @param tickets array of tickets, each containing a title and category
+ * @returns array of estimated times to close the tickets
+ */
+const getEstimatedTimes = async (authToken, tickets) => {
+	return await APICall(
+		'estimate-times',
+		'POST',
+		JSON.stringify({ tickets }),
+		{
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${authToken}`,
+		},
+		true,
+		SERVER2_BASE
+	);
+};
+
+/**
  * Attempts to login the student
  *
  * @param email email of the student
@@ -175,6 +196,7 @@ const API = {
 	editTicketCategory,
 	addTextBlock,
 	getEstimatedTime,
+	getEstimatedTimes,
 };
 
 export { API };

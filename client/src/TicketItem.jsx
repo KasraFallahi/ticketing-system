@@ -30,10 +30,7 @@ function TicketItem({ ticket }) {
 								</Col>
 								<Col md={2} className="text-center d-flex align-items-center">
 									{user && user.is_admin === 1 ? (
-										<>
-											{/* TODO change to actual value of estimated time */}2
-											days
-										</>
+										<>{ticket.estClosure} hours</>
 									) : (
 										ticket.category
 									)}

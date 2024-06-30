@@ -18,7 +18,8 @@ function Ticket(
 	submitted_at,
 	owner,
 	text_blocks,
-	owner_id
+	owner_id,
+	est_closure
 ) {
 	this.ticket_id = ticket_id;
 	this.state = state;
@@ -29,6 +30,7 @@ function Ticket(
 	this.owner = owner;
 	this.text_blocks = text_blocks;
 	this.owner_id = owner_id;
+	this.estClosure = est_closure;
 }
 
 export { Ticket };

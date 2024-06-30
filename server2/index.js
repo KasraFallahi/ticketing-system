@@ -71,6 +71,37 @@ app.post('/api/estimate-time', (req, res) => {
 	}
 });
 
+// POST /api/estimate-times
+app.post('/api/estimate-times', (req, res) => {
+	const tickets = req.body.tickets;
+
+	if (!Array.isArray(tickets) || tickets.length === 0) {
+		return res
+			.status(400)
+			.json({ errors: ['Tickets array is required and cannot be empty'] });
+	}
+
+	const estimates = tickets.map((ticket) => {
+		const { title, category } = ticket;
+
+		if (!title || !category) {
+			return { error: 'Title and category are required' };
+		}
+
+		const titleLength = title.replace(/\s+/g, '').length;
+		const categoryLength = category.replace(/\s+/g, '').length;
+		const totalLength = titleLength + categoryLength;
+
+		const baseEstimate = totalLength * 10;
+		const randomHours = Math.floor(Math.random() * 240) + 1;
+		const estimatedHours = baseEstimate + randomHours;
+
+		return { estimatedHours };
+	});
+
+	res.json(estimates);
+});
+
 /*** Other express-related instructions ***/
 
 // Activate the server

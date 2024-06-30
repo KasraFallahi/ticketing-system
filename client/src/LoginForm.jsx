@@ -18,7 +18,7 @@ import validator from 'validator';
  * @param props.errorAlertActive true when the error alert on the top is active and showing, false otherwise
  */
 function LoginForm(props) {
-	const [email, setEmail] = useState('s123456@studenti.polito.it');
+	const [email, setEmail] = useState('u1@p.it');
 	const [password, setPassword] = useState('password');
 
 	const [emailError, setEmailError] = useState('');
