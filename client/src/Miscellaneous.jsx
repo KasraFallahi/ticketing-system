@@ -26,7 +26,7 @@ const waitingContext = createContext();
  * The navigation bar at the top of the app.
  * This is meant to be inserted as a parent route to pretty much the entire app
  *
- * @param props.student object with all the currently logged in student's info
+ * @param props.user object with all the currently logged in user's info
  */
 function MyNavbar(props) {
 	const navigate = useNavigate();
@@ -212,125 +212,6 @@ function SmallRoundButton(props) {
 	}
 }
 
-/**
- * Checks the compatibility of the specified Course with the provided study plan
- *
- * @param course the Course object to test
- * @param studyPlan a list of all the course codes currently in the study plan
- * @param courses all the courses
- * @param fullTime boolean, full or part time
- *
- * @returns an object like {result: <boolean>, reason: "..."}, where reason, in case result is false,
- *          contains a user-appropriate explaination for why this course is not compatible
- */
-function checkCourseConstraints(course, studyPlan, courses, fullTime) {
-	// Is this addition or removal?
-	if (studyPlan.includes(course.code)) {
-		// Removal
-		// Check if there's any other course in the study plan that needs this one
-		let needy = studyPlan
-			.map((sp) => courses.find((c) => c.code === sp))
-			.filter((c) => c.mandatory === course.code);
-
-		if (needy.length > 0) {
-			return {
-				result: false,
-				reason:
-					'This course is needed by ' +
-					needy
-						.map((n) => `${n.code}: ${n.name}`)
-						.reduce((previous, current) => previous + ', ' + current),
-			};
-		}
-	} else {
-		// Addition
-		// Check mandatory
-		if (course.mandatory && !studyPlan.includes(course.mandatory)) {
-			return {
-				result: false,
-				reason: `This course requires ${course.mandatory}: ${
-					courses.find((c) => c.code === course.mandatory)?.name ||
-					'Unknown course'
-				}`,
-			};
-		}
-
-		// Check incompatibilities
-		let incompats = [];
-		for (const i of course.incompat) {
-			if (studyPlan.includes(i)) {
-				incompats.push(i);
-			}
-		}
-
-		if (incompats.length > 0) {
-			return {
-				result: false,
-				reason:
-					'This course is incompatible with ' +
-					incompats
-						.map(
-							(i) =>
-								`${i}: ${
-									courses.find((c) => c.code === i)?.name || 'Unknown course'
-								}`
-						)
-						.reduce((previous, current) => previous + ', ' + current),
-			};
-		}
-
-		// Check number of students
-		if (course.maxStudents && course.numStudents >= course.maxStudents) {
-			return {
-				result: false,
-				reason: 'This course has reached the maximum amount of students',
-			};
-		}
-
-		// Check cfu
-		const currentCfu = studyPlan
-			.map((sp) => courses.find((c) => c.code === sp))
-			.reduce((previous, current) => previous + current.cfu, 0);
-
-		const maxCfu = fullTime ? 80 : 40;
-
-		if (currentCfu + course.cfu > maxCfu) {
-			return {
-				result: false,
-				reason:
-					'Adding this course would exceed the maximum number of credits for your career type',
-			};
-		}
-	}
-
-	// If everything else was ok, return successful
-	return {
-		result: true,
-	};
-}
-
-/**
- * Checks whether the current study plan contains local changes vs the saved version
- *
- * @param saved saved version of the study plan
- * @param current current study plan
- *
- * @returns true if the study plan has been modified, false if they are equal
- */
-function checkStudyPlanModified(saved, current) {
-	// This function will only be called if a current study plan exists
-	if (saved.fullTime !== current.fullTime) return true;
-
-	// Check if the two study plans contain the same number of courses
-	if (saved.courses.length !== current.courses.length) return true;
-
-	for (const c of saved.courses) {
-		if (!current.courses.includes(c)) return true;
-	}
-
-	return false;
-}
-
 export {
 	MyNavbar,
 	NotFoundPage,
@@ -341,6 +222,4 @@ export {
 	ticketActionsContext,
 	waitingContext,
 	SmallRoundButton,
-	checkCourseConstraints,
-	checkStudyPlanModified,
 };

@@ -35,9 +35,8 @@ function App() {
 }
 
 /**
- * The actual main app.
- * This is used instead of the default App component because Main can be encapsulated in
- * a BrowserRouter component, giving it the possibility of using the useNavigate hook.
+ * The main app component.
+ * This is encapsulated in a BrowserRouter to use the useNavigate hook.
  */
 function Main() {
 	const navigate = useNavigate();
@@ -51,29 +50,25 @@ function Main() {
 	/** A list of success messages */
 	const [success, setSuccess] = useState('');
 
-	/** Network-related waiting, like after pressing save or delete study plan. When waiting all controls are disabled. */
+	/** Network-related waiting, like after pressing save or delete */
 	const [waiting, setWaiting] = useState(false);
 
-	/**
-	 * Information about the currently logged in student.
-	 * This is undefined when no student is logged in
-	 */
+	/** Information about the currently logged in user */
 	const [user, setUser] = useState(undefined);
 
+	/** JWT token and expiration time */
 	const [authToken, setAuthToken] = useState(null);
-
 	const [tokenExpiration, setTokenExpiration] = useState(null);
 
 	/** The list of tickets */
 	const [tickets, setTickets] = useState([]);
 
 	/** State of new tickets added */
-	const [newTickets, setnewTickets] = useState(false);
+	const [newTickets, setNewTickets] = useState(false);
 
 	useEffect(() => {
 		const fetchTicketsWithEstimates = async () => {
 			try {
-				// Load the list of tickets
 				const res = await API.fetchTickets();
 				const tickets = res.map(
 					(ticket) =>
@@ -92,13 +87,11 @@ function Main() {
 				);
 
 				if (user && user.is_admin === 1) {
-					// Extract titles and categories for estimation
 					const ticketData = tickets.map((ticket) => ({
 						title: ticket.title,
 						category: ticket.category,
 					}));
 
-					// Ensure token is valid
 					let currentAuthToken = authToken;
 					if (!authToken || Date.now() >= tokenExpiration) {
 						const response = await API.getAuthToken();
@@ -107,7 +100,6 @@ function Main() {
 						setTokenExpiration(Date.now() + 60000); // Set expiration time to 60 seconds
 					}
 
-					// Fetch estimated times
 					const estimatedTimesResponse = await API.getEstimatedTimes(
 						currentAuthToken,
 						ticketData
@@ -125,7 +117,6 @@ function Main() {
 				setErrors(err);
 				console.log(err);
 			} finally {
-				// Loading done
 				setLoading(false);
 			}
 		};
@@ -140,7 +131,6 @@ function Main() {
 				setTokenExpiration(null);
 			}, 60000);
 
-			// Clean up the timeout if the component unmounts or the expiration time changes
 			return () => clearTimeout(timeoutId);
 		}
 	}, [tokenExpiration]);
@@ -154,12 +144,11 @@ function Main() {
 	 */
 	const login = async (email, password, onFinish) => {
 		try {
-			const fetchetUser = await API.login(email, password);
-			setUser(fetchetUser);
+			const fetchedUser = await API.login(email, password);
+			setUser(fetchedUser);
 			setErrors([]);
-			// Loading done
 			setLoading(false);
-			setnewTickets(true);
+			setNewTickets(true);
 			navigate('/');
 		} catch (err) {
 			setErrors(err);
@@ -179,7 +168,6 @@ function Main() {
 			setAuthToken(response.token);
 			setTokenExpiration(Date.now() + 60000); // Set expiration time to 60 seconds
 			setErrors([]);
-			// Loading done
 			setLoading(false);
 			return response.token;
 		} catch (err) {
@@ -196,12 +184,11 @@ function Main() {
 		API.logout()
 			.then(() => {
 				setUser(undefined);
-				setAuthToken(undefined);
+				setAuthToken(null);
 				navigate('/');
-				setnewTickets(true);
+				setNewTickets(true);
 			})
 			.catch((err) => {
-				// Remove eventual 401 Unauthorized errors from the list
 				setErrors(err.filter((e) => e !== 'Not authenticated'));
 			})
 			.finally(() => setLoading(false));
@@ -212,9 +199,8 @@ function Main() {
 			.then(() => {
 				setErrors([]);
 				setSuccess('Ticket submitted successfully');
-				// Loading done
 				setLoading(false);
-				setnewTickets(true);
+				setNewTickets(true);
 				navigate('/');
 			})
 			.catch((err) => setErrors(err))
@@ -235,36 +221,27 @@ function Main() {
 				setErrors([]);
 				setSuccess(`Ticket state changed to ${newState}`);
 				navigate('/');
-				setnewTickets(true);
+				setNewTickets(true);
 			})
 			.catch((err) => setErrors(err))
-			.finally(async () => {
+			.finally(() => {
 				onFinish?.();
-				// Loading done
 				setLoading(false);
 			});
 	};
 
-	/**
-	 * Edit the category of an existing ticket
-	 *
-	 * @param ticketId ID of the ticket to edit
-	 * @param newCategory New category of the ticket
-	 * @param onFinish optional callback to be called on edit success or fail
-	 */
 	const editTicketCategory = (ticketId, newCategory, onFinish) => {
 		setLoading(true);
 		API.editTicketCategory(ticketId, newCategory)
 			.then(() => {
 				setErrors([]);
 				setSuccess(`Ticket category changed to ${newCategory}`);
-				setnewTickets(true);
+				setNewTickets(true);
 				navigate('/');
 			})
 			.catch((err) => setErrors(err))
-			.finally(async () => {
+			.finally(() => {
 				onFinish?.();
-				// Loading done
 				setLoading(false);
 			});
 	};
@@ -283,13 +260,12 @@ function Main() {
 			.then(() => {
 				setErrors([]);
 				setSuccess('Your reply added successfully');
-				setnewTickets(true);
+				setNewTickets(true);
 				navigate('/');
 			})
 			.catch((err) => setErrors(err))
-			.finally(async () => {
+			.finally(() => {
 				onFinish?.();
-				// Loading done
 				setLoading(false);
 			});
 	};
@@ -318,7 +294,6 @@ function Main() {
 			setErrors(err);
 		} finally {
 			onFinish?.();
-			// Loading done
 			setLoading(false);
 		}
 	};
@@ -392,9 +367,9 @@ function Main() {
 /**
  * Proper home page component of the app
  *
- * @param props.courses list of all the Course objects
- * @param props.student object with all the currently logged in student's info
- * @param props.spActivities object with all the study plan related functions
+ * @param props.tickets list of all the tickets
+ * @param props.user object with all the currently logged in user's info
+ * @param props.ticketActions object with all the ticket-related actions
  * @param props.errorAlertActive true when the error alert on the top is active and showing, false otherwise
  * @param props.waiting boolean, when true all controls should be disabled
  */
