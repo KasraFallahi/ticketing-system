@@ -67,6 +67,7 @@ function Main() {
 	const [newTickets, setNewTickets] = useState(false);
 
 	useEffect(() => {
+		console.log('Fetching tickets', newTickets);
 		const fetchTicketsWithEstimates = async () => {
 			try {
 				const res = await API.fetchTickets();
@@ -117,12 +118,13 @@ function Main() {
 				setErrors(err);
 				console.log(err);
 			} finally {
+				setNewTickets(false);
 				setLoading(false);
 			}
 		};
 
 		fetchTicketsWithEstimates();
-	}, [authToken, tokenExpiration, user]);
+	}, [authToken, tokenExpiration, user, newTickets]);
 
 	useEffect(() => {
 		if (tokenExpiration) {
